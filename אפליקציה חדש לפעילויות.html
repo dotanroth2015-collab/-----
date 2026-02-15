@@ -1,0 +1,590 @@
+<!doctype html>
+
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Kids Portal — קוד כניסה</title>
+  <style>
+    :root{
+      --bg1:#0b1220;
+      --text:#f4f7ff;
+      --muted:#c7d2fe;
+      --card: rgba(255,255,255,.10);
+      --stroke: rgba(255,255,255,.16);
+      --shadow: 0 18px 45px rgba(0,0,0,.35);
+      --radius: 22px;
+      --ok:#34d399;
+      --danger:#fb7185;
+      --warn:#fbbf24;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans Hebrew", sans-serif;
+      color: var(--text);
+      min-height:100vh;
+      display:flex;
+      justify-content:center;
+      padding: 18px;
+      background:
+        radial-gradient(900px 600px at 5% 10%, rgba(56,189,248,.30), transparent 60%),
+        radial-gradient(900px 600px at 95% 5%, rgba(167,139,250,.32), transparent 55%),
+        radial-gradient(800px 520px at 15% 95%, rgba(251,191,36,.22), transparent 60%),
+        radial-gradient(900px 600px at 90% 90%, rgba(52,211,153,.22), transparent 62%),
+        linear-gradient(180deg, #0b1220, #08102a 40%, #070a18);
+    }.app{width: min(1040px, 100%); display:grid; gap:14px;}
+
+header{
+  display:flex; align-items:center; justify-content:space-between;
+  padding: 14px 16px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid var(--stroke);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(10px);
+}
+
+header .title{display:flex; gap:10px; align-items:center;}
+
+.logo{
+  width:40px;height:40px;border-radius:16px;display:grid;place-items:center;
+  background: rgba(255,255,255,.10);
+  border:1px solid rgba(255,255,255,.18);
+}
+
+.pill{
+  font-size:12px; padding:6px 10px; border-radius:999px;
+  border:1px solid rgba(255,255,255,.18);
+  background: rgba(255,255,255,.08);
+  color: rgba(244,247,255,.90);
+}
+
+.btn, button{
+  cursor:pointer;
+  border: 1px solid rgba(255,255,255,.18);
+  background: rgba(255,255,255,.08);
+  color: var(--text);
+  padding: 10px 12px;
+  border-radius: 16px;
+  transition: transform .05s ease, border-color .2s ease, background .2s ease;
+  box-shadow: 0 10px 22px rgba(0,0,0,.25);
+}
+.btn:hover{border-color: rgba(255,255,255,.35)}
+.btn:active{transform: translateY(1px)}
+
+.btn.primary{
+  background: linear-gradient(135deg, rgba(56,189,248,.22), rgba(167,139,250,.22));
+  border-color: rgba(56,189,248,.38);
+}
+.btn.ok{border-color: rgba(52,211,153,.42); background: rgba(52,211,153,.12)}
+.btn.danger{border-color: rgba(251,113,133,.45); background: rgba(251,113,133,.12)}
+.btn.warn{border-color: rgba(251,191,36,.45); background: rgba(251,191,36,.12)}
+
+.icon-btn{width:44px; height:44px; display:grid; place-items:center; border-radius: 16px;}
+
+main{display:grid; gap:14px; grid-template-columns: 1.25fr .75fr;}
+@media (max-width: 920px){ main{grid-template-columns: 1fr} }
+
+.card{
+  background: var(--card);
+  border: 1px solid var(--stroke);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 16px;
+  backdrop-filter: blur(12px);
+}
+
+h1,h2,h3{margin:0 0 10px 0}
+h1{font-size:18px}
+h2{font-size:16px}
+h3{font-size:14px}
+
+p{margin: 8px 0; color: rgba(244,247,255,.82); line-height:1.5}
+
+.muted{color: rgba(199,210,254,.92); font-size: 12px}
+.big{font-size: 26px; letter-spacing: .2px; margin: 0 0 6px 0;}
+.divider{height:1px; background: rgba(255,255,255,.14); margin: 12px 0;}
+
+.row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+.grid2{display:grid; grid-template-columns: 1fr 1fr; gap:10px}
+@media (max-width:520px){.grid2{grid-template-columns:1fr}}
+
+input, select{
+  width:100%;
+  padding: 10px 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.18);
+  background: rgba(0,0,0,.18);
+  color: var(--text);
+  outline:none;
+}
+input::placeholder{color: rgba(199,210,254,.75)}
+
+.list{display:grid; gap:10px}
+.item{
+  padding: 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(0,0,0,.14);
+  display:flex; justify-content:space-between; gap:12px; align-items:center;
+}
+
+.badge{
+  font-size:12px; padding: 6px 10px; border-radius: 999px;
+  border:1px solid rgba(255,255,255,.18);
+  background: rgba(255,255,255,.08);
+  white-space:nowrap;
+}
+
+.status{
+  font-size:12px; padding: 8px 10px; border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.18);
+  background: rgba(0,0,0,.12);
+  color: rgba(244,247,255,.86);
+}
+
+.status.ok{border-color: rgba(52,211,153,.45)}
+.status.bad{border-color: rgba(251,113,133,.50)}
+.status.warn{border-color: rgba(251,191,36,.50)}
+
+.hidden{display:none !important}
+.mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
+
+.mini{font-size: 11px; opacity:.95}
+.help{font-size:12px; color: rgba(244,247,255,.78)}
+
+/* Print hint in app (real print layout is generated in a new window) */
+.print-hint{font-size:12px; color: rgba(244,247,255,.78)}
+
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="title">
+        <div class="logo" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M7 7c6 0 10 4 10 10" stroke="rgba(56,189,248,.95)" stroke-width="2" stroke-linecap="round"/>
+            <path d="M7 11c4 0 6 2 6 6" stroke="rgba(167,139,250,.95)" stroke-width="2" stroke-linecap="round"/>
+            <path d="M7 15c2 0 2 0 2 2" stroke="rgba(244,247,255,.95)" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <h1 style="margin:0">פורטל ילדים — נקודות ופרסים</h1>
+            <span id="modePill" class="pill">מצב: בית</span>
+          </div>
+          <div class="muted">תצוגה מקדימה: דמו בדפדפן • כניסה לפי קוד ילד (3 ספרות)</div>
+        </div>
+      </div><div class="row">
+    <button id="goHomeBtn" class="btn">בית</button>
+    <button id="settingsBtn" class="icon-btn btn" title="הגדרות">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" stroke="rgba(244,247,255,.95)" stroke-width="2"/>
+        <path d="M19.4 15a8.2 8.2 0 0 0 .1-1l2-1.2-2-3.5-2.3.7a7.6 7.6 0 0 0-1.7-1l-.3-2.4H9.8l-.3 2.4a7.6 7.6 0 0 0-1.7 1l-2.3-.7-2 3.5 2 1.2a8.2 8.2 0 0 0 .1 1 8.2 8.2 0 0 0-.1 1l-2 1.2 2 3.5 2.3-.7a7.6 7.6 0 0 0 1.7 1l.3 2.4h4.4l.3-2.4a7.6 7.6 0 0 0 1.7-1l2.3.7 2-3.5-2-1.2a8.2 8.2 0 0 0-.1-1Z" stroke="rgba(199,210,254,.85)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<main>
+  <section class="card" id="screenContainer">
+
+    <!-- HOME -->
+    <div id="homeScreen">
+      <h2>מסך בית</h2>
+      <p class="big">הכנס קוד ילד כדי להתחיל</p>
+
+      <div class="grid2">
+        <div>
+          <label class="muted">קוד ילד (3 ספרות)</label>
+          <input id="kidCodeInput" class="mono" inputmode="numeric" maxlength="3" placeholder="למשל: 123" />
+          <div class="row" style="margin-top:10px">
+            <button id="enterByCodeBtn" class="btn primary">כניסה</button>
+            <button id="demoKidBtn" class="btn">דמו</button>
+            <button id="clearKidCodeBtn" class="btn">נקה</button>
+          </div>
+          <p class="help">במנהל אפשר ליצור/לשנות קוד לכל ילד. אם יש כפילויות — המנהל יסמן ויאפשר לתקן.</p>
+        </div>
+        <div>
+          <div id="homeStatus" class="status">סטטוס: מוכן</div>
+          <div class="divider"></div>
+          <div class="muted">ילדים שמוגדרים כרגע:</div>
+          <div id="kidsMiniList" class="list" style="margin-top:10px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KID PORTAL -->
+    <div id="kidPortalScreen" class="hidden">
+      <div class="row" style="justify-content:space-between">
+        <div>
+          <h2>פורטאל אישי — <span id="kidNameTitle"></span></h2>
+          <div class="muted">קוד: <span id="kidCodeTitle" class="mono"></span></div>
+        </div>
+        <button id="backToHomeBtn" class="btn">חזרה לבית</button>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="row" style="justify-content:space-between">
+        <div>
+          <div class="muted">נקודות</div>
+          <div id="kidPoints" class="big">0</div>
+        </div>
+        <div class="badge">מסך ילדים: קנייה בלבד</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <h3>חנות פרסים</h3>
+      <p class="muted">אפשר לקנות רק אם יש מספיק נקודות. אחרת הפרס “נעול”.</p>
+      <div id="prizesStoreList" class="list"></div>
+    </div>
+
+    <!-- SETTINGS (Admin inside) -->
+    <div id="settingsScreen" class="hidden">
+      <div class="row" style="justify-content:space-between">
+        <h2>הגדרות</h2>
+        <button id="closeSettingsBtn" class="btn">סגור</button>
+      </div>
+
+      <div id="settingsLocked">
+        <p class="muted">כדי להמשיך יש להזין קוד מנהל.</p>
+        <label class="muted">קוד</label>
+        <input id="settingsPassword" type="password" placeholder="••••" inputmode="numeric" />
+        <div class="row" style="margin-top:10px">
+          <button id="unlockSettingsBtn" class="btn primary">אישור</button>
+          <span id="settingsMsg" class="status hidden"></span>
+        </div>
+      </div>
+
+      <div id="settingsUnlocked" class="hidden">
+        <div class="row" style="justify-content:space-between; align-items:center">
+          <div class="status ok">מצב מנהל פתוח ✅</div>
+          <button id="printCardsBtn" class="btn warn">הדפס כרטיסים</button>
+        </div>
+        <p class="print-hint">הדפסה תיפתח בחלון חדש עם כרטיסים קטנים (כמה כרטיסים בדף).</p>
+
+        <div class="divider"></div>
+
+        <h3>ניהול קודי כניסה למנהל</h3>
+        <p class="muted">אפשר להוסיף עוד קודים למנהל. (הקודים נשמרים במכשיר הזה בלבד)</p>
+        <div class="grid2">
+          <div>
+            <label class="muted">קוד מנהל חדש</label>
+            <input id="newAdminCode" type="password" placeholder="••••" inputmode="numeric" />
+            <div class="row" style="margin-top:10px">
+              <button id="addAdminCodeBtn" class="btn ok">הוסף קוד</button>
+            </div>
+          </div>
+          <div>
+            <div class="muted">קודים קיימים:</div>
+            <div id="adminCodesList" class="list" style="margin-top:10px"></div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <h3>בחירת ילד</h3>
+        <p class="muted">לחץ על שם של ילד כדי לערוך נקודות.</p>
+        <div id="adminKidsPicker" class="list"></div>
+
+        <div id="adminKidEditor" class="hidden">
+          <div class="divider"></div>
+
+          <div class="row" style="justify-content:space-between; align-items:flex-end">
+            <div>
+              <h3 style="margin:0">עריכת נקודות — <span id="adminKidName"></span></h3>
+              <div class="muted">קוד ילד: <span id="adminKidCode" class="mono"></span></div>
+            </div>
+            <div>
+              <div class="muted">נקודות נוכחיות</div>
+              <div id="adminKidPoints" class="big">0</div>
+            </div>
+          </div>
+
+          <div class="grid2" style="margin-top:10px">
+            <div>
+              <label class="muted">הוסף נקודות</label>
+              <input id="addPoints" type="number" min="0" placeholder="למשל: 10" />
+              <div class="row" style="margin-top:10px">
+                <button id="addPointsBtn" class="btn ok">הוסף</button>
+              </div>
+            </div>
+            <div>
+              <label class="muted">הורד נקודות</label>
+              <input id="removePoints" type="number" min="0" placeholder="למשל: 5" />
+              <div class="row" style="margin-top:10px">
+                <button id="removePointsBtn" class="btn danger">הורד</button>
+                <button id="setZeroBtn" class="btn danger">אפס</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <h3>היסטוריית קניות</h3>
+          <div id="purchaseHistory" class="list"></div>
+        </div>
+
+        <div class="divider"></div>
+
+        <h3>ניהול ילדים</h3>
+        <div class="grid2">
+          <div>
+            <label class="muted">שם הילד</label>
+            <input id="newKidName" placeholder="למשל: דותן" />
+          </div>
+          <div>
+            <label class="muted">קוד ילד (3 ספרות)</label>
+            <div class="row" style="align-items:stretch">
+              <input id="newKidCode" class="mono" inputmode="numeric" maxlength="3" placeholder="---" style="flex:1" />
+              <button id="genKidCodeBtn" class="btn">צור קוד</button>
+            </div>
+            <div class="muted mini">טיפ: הקוד חייב להיות 3 ספרות. המערכת תנסה להימנע מכפילויות.</div>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:10px">
+          <button id="addKidBtn" class="btn ok">הוסף ילד</button>
+          <button id="exportBtn" class="btn">ייצוא</button>
+          <button id="importBtn" class="btn">ייבוא</button>
+          <input id="importFile" type="file" accept="application/json" class="hidden" />
+          <button id="resetDemoDataBtn" class="btn danger">איפוס נתונים</button>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="muted">רשימת ילדים:</div>
+        <div id="kidsAdminList" class="list" style="margin-top:10px"></div>
+
+        <div class="divider"></div>
+
+        <h3>ניהול פרסים</h3>
+        <div class="grid2">
+          <div>
+            <label class="muted">שם פרס</label>
+            <input id="newPrizeName" placeholder="למשל: ארטיק" />
+          </div>
+          <div>
+            <label class="muted">מחיר בנקודות</label>
+            <input id="newPrizeCost" type="number" min="0" placeholder="למשל: 20" />
+          </div>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <button id="addPrizeBtn" class="btn ok">הוסף פרס</button>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="muted">רשימת פרסים:</div>
+        <div id="adminPrizeList" class="list" style="margin-top:10px"></div>
+      </div>
+    </div>
+
+  </section>
+
+  <aside class="card">
+    <h2>הערות</h2>
+    <p class="muted">הסרתי NFC לגמרי. כניסה לפורטל ילד היא לפי <b>קוד ילד</b> (3 ספרות).</p>
+    <div class="divider"></div>
+    <p class="muted">שאלה קצרה (כדי לוודא התנהגות): כשיש שני ילדים עם אותו קוד — האם אתה רוצה שהכניסה מהבית תציג <b>בחירה</b> בין הילדים, או שתחסום ותבקש לתקן במנהל?</p>
+  </aside>
+</main>
+
+  </div><script>
+  // ⚠️ הערה: קוד מנהל בצד לקוח אינו מאובטח באמת (ניתן לצפייה דרך DevTools).
+  // זה דמו בדפדפן.
+
+  const DEFAULT_ADMIN_CODE = "2590";
+  const STORAGE_KEY = "kids_portal_code_v1";
+
+  const el = (id)=>document.getElementById(id);
+
+  function cryptoId(){
+    if (window.crypto?.randomUUID) return crypto.randomUUID();
+    return Math.random().toString(16).slice(2) + Date.now().toString(16);
+  }
+
+  function pad3(n){
+    const s = String(n);
+    return s.padStart(3, "0");
+  }
+
+  function random3Digits(){
+    // 000-999 allowed, but avoid 000 (too trivial)
+    const n = Math.floor(Math.random()*1000);
+    return n === 0 ? "001" : pad3(n);
+  }
+
+  function sanitizeKidCode(code){
+    const s = String(code ?? "").trim();
+    const digits = s.replace(/\D/g, "");
+    if(digits.length !== 3) return null;
+    return digits;
+  }
+
+  function makeDefaultState(){
+    return {
+      adminCodes: [DEFAULT_ADMIN_CODE],
+      kids: [
+        { id: cryptoId(), name: "עילי", code: "123", points: 50 },
+        { id: cryptoId(), name: "דותן", code: "456", points: 15 }
+      ],
+      prizes: [
+        { id: cryptoId(), name: "ארטיק", cost: 20 },
+        { id: cryptoId(), name: "שעת מסך", cost: 30 },
+        { id: cryptoId(), name: "צעצוע קטן", cost: 60 }
+      ],
+      purchases: []
+    };
+  }
+
+  function normalizeState(s){
+    if(!s || typeof s !== "object") return makeDefaultState();
+    s.adminCodes ??= [DEFAULT_ADMIN_CODE];
+    s.kids ??= [];
+    s.prizes ??= [];
+    s.purchases ??= [];
+
+    if(!Array.isArray(s.adminCodes) || s.adminCodes.length === 0) s.adminCodes = [DEFAULT_ADMIN_CODE];
+    if(!Array.isArray(s.kids)) s.kids = [];
+    if(!Array.isArray(s.prizes)) s.prizes = [];
+    if(!Array.isArray(s.purchases)) s.purchases = [];
+
+    // migrate older schema (uid -> code) if needed
+    s.kids = s.kids.map(k=>{
+      const kk = {...k};
+      if(kk.code == null && kk.uid != null){
+        // best effort: take last 3 digits from uid
+        const digits = String(kk.uid).replace(/\D/g, "");
+        kk.code = (digits.slice(-3).padStart(3,"0")) || random3Digits();
+      }
+      kk.code = sanitizeKidCode(kk.code) ?? random3Digits();
+      kk.points = Number(kk.points)||0;
+      kk.name = String(kk.name||"");
+      return kk;
+    });
+
+    return s;
+  }
+
+  function loadState(){
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return makeDefaultState();
+    try{ return normalizeState(JSON.parse(raw)); }
+    catch{ return makeDefaultState(); }
+  }
+
+  function saveState(){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+
+  let state = loadState();
+
+  const screens = {
+    home: el("homeScreen"),
+    kidPortal: el("kidPortalScreen"),
+    settings: el("settingsScreen"),
+  };
+
+  let currentScreen = "home";
+  let currentKidId = null;
+  let selectedKidId = null;
+
+  function showOnly(screenKey){
+    Object.entries(screens).forEach(([k,node])=>{
+      node.classList.toggle("hidden", k !== screenKey);
+    });
+  }
+
+  function setModePill(text){ el("modePill").textContent = `מצב: ${text}`; }
+
+  function setStatus(targetId, msg, kind=""){
+    const node = el(targetId);
+    node.textContent = msg;
+    node.classList.remove("ok","bad","warn");
+    if(kind) node.classList.add(kind);
+  }
+
+  function escapeHtml(str){
+    return String(str)
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  function maskCode(code){
+    const s = String(code || "");
+    if(s.length <= 2) return "•".repeat(Math.max(2, s.length));
+    return "•".repeat(s.length - 2) + s.slice(-2);
+  }
+
+  function kidCodeConflictsMap(){
+    const map = new Map();
+    for(const k of state.kids){
+      const c = String(k.code||"");
+      map.set(c, (map.get(c)||0) + 1);
+    }
+    return map;
+  }
+
+  function generateUniqueKidCode(maxTries=3000){
+    const existing = new Set(state.kids.map(k=>String(k.code)));
+    for(let i=0;i<maxTries;i++){
+      const c = random3Digits();
+      if(!existing.has(c)) return c;
+    }
+    // fallback (unlikely)
+    return random3Digits();
+  }
+
+  function renderKidsMiniList(){
+    const box = el("kidsMiniList");
+    box.innerHTML = "";
+    if(state.kids.length === 0){
+      box.innerHTML = `<div class="status bad">אין ילדים. הוסף בהגדרות.</div>`;
+      return;
+    }
+
+    const conflicts = kidCodeConflictsMap();
+
+    state.kids.slice(0,6).forEach(k=>{
+      const dup = (conflicts.get(String(k.code))||0) > 1;
+      const div = document.createElement("div");
+      div.className = "item";
+      div.innerHTML = `
+        <div>
+          <strong>${escapeHtml(k.name)}</strong>
+          <div class="muted mono">קוד: ${escapeHtml(k.code)}</div>
+        </div>
+        <div class="row">
+          <span class="badge">${k.points} נק׳</span>
+          ${dup ? `<span class="badge" style="border-color:rgba(251,191,36,.55)">כפילות</span>` : ``}
+        </div>
+      `;
+      box.appendChild(div);
+    });
+  }
+
+  function renderKidPortal(kid){
+    el("kidNameTitle").textContent = kid.name;
+    el("kidCodeTitle").textContent = kid.code;
+    el("kidPoints").textContent = kid.points;
+
+    const box = el("prizesStoreList");
+    box.innerHTML = "";
+
+    if(state.prizes.length === 0){
+      box.innerHTML = `<div class="status bad">אין פרסים בחנות. מנהל צריך להוסיף.</div>`;
+      return;
+    }
+
+    state.prizes.forEach(prize=>{
+      const canBuy = kid.points >= prize.cost;
+      const div = document.createElement("div");
+      div.classNa

@@ -1,0 +1,1170 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Kids Portal — כניסה לפי שם</title>
+  <style>
+    :root{
+      --text:#f4f7ff;
+      --muted:#c7d2fe;
+      --card: rgba(255,255,255,.10);
+      --stroke: rgba(255,255,255,.16);
+      --shadow: 0 18px 45px rgba(0,0,0,.35);
+      --radius: 22px;
+      --ok:#34d399;
+      --danger:#fb7185;
+      --warn:#fbbf24;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans Hebrew", sans-serif;
+      color: var(--text);
+      min-height:100vh;
+      display:flex;
+      justify-content:center;
+      padding: 18px;
+      background:
+        radial-gradient(900px 600px at 5% 10%, rgba(56,189,248,.34), transparent 60%),
+        radial-gradient(900px 600px at 95% 5%, rgba(167,139,250,.36), transparent 55%),
+        radial-gradient(800px 520px at 15% 95%, rgba(251,191,36,.26), transparent 60%),
+        radial-gradient(900px 600px at 90% 90%, rgba(52,211,153,.26), transparent 62%),
+        linear-gradient(180deg, #0b1220, #08102a 40%, #070a18);
+    }
+
+    .app{width: min(1040px, 100%); display:grid; gap:14px;}
+
+    header{
+      display:flex; align-items:center; justify-content:space-between;
+      padding: 14px 16px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    header .title{display:flex; gap:10px; align-items:center;}
+
+    .logo{
+      width:40px;height:40px;border-radius:16px;display:grid;place-items:center;
+      background: rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.18);
+    }
+
+    .pill{
+      font-size:12px; padding:6px 10px; border-radius:999px;
+      border:1px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.08);
+      color: rgba(244,247,255,.90);
+    }
+
+    .btn, button{
+      cursor:pointer;
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.08);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 16px;
+      transition: transform .05s ease, border-color .2s ease, background .2s ease;
+      box-shadow: 0 10px 22px rgba(0,0,0,.25);
+    }
+    .btn:hover{border-color: rgba(255,255,255,.35)}
+    .btn:active{transform: translateY(1px)}
+
+    .btn.primary{
+      background: linear-gradient(135deg, rgba(56,189,248,.22), rgba(167,139,250,.22));
+      border-color: rgba(56,189,248,.38);
+    }
+    .btn.ok{border-color: rgba(52,211,153,.42); background: rgba(52,211,153,.12)}
+    .btn.danger{border-color: rgba(251,113,133,.45); background: rgba(251,113,133,.12)}
+    .btn.warn{border-color: rgba(251,191,36,.45); background: rgba(251,191,36,.12)}
+
+    .icon-btn{width:44px; height:44px; display:grid; place-items:center; border-radius: 16px;}
+
+    main{display:grid; gap:14px; grid-template-columns: 1.25fr .75fr;}
+    @media (max-width: 920px){ main{grid-template-columns: 1fr} }
+
+    .card{
+      background: var(--card);
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px;
+      backdrop-filter: blur(12px);
+    }
+
+    h1,h2,h3{margin:0 0 10px 0}
+    h1{font-size:18px}
+    h2{font-size:16px}
+    h3{font-size:14px}
+
+    p{margin: 8px 0; color: rgba(244,247,255,.82); line-height:1.5}
+
+    .muted{color: rgba(199,210,254,.92); font-size: 12px}
+    .big{font-size: 26px; letter-spacing: .2px; margin: 0 0 6px 0;}
+    .divider{height:1px; background: rgba(255,255,255,.14); margin: 12px 0;}
+
+    .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+    .grid2{display:grid; grid-template-columns: 1fr 1fr; gap:10px}
+    @media (max-width:520px){.grid2{grid-template-columns:1fr}}
+
+    input{
+      width:100%;
+      padding: 10px 12px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(0,0,0,.18);
+      color: var(--text);
+      outline:none;
+    }
+    input::placeholder{color: rgba(199,210,254,.75)}
+
+    .list{display:grid; gap:10px}
+    .item{
+      padding: 12px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.14);
+      display:flex; justify-content:space-between; gap:12px; align-items:center;
+    }
+
+    .badge{
+      font-size:12px; padding: 6px 10px; border-radius: 999px;
+      border:1px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.08);
+      white-space:nowrap;
+    }
+
+    .status{
+      font-size:12px; padding: 8px 10px; border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(0,0,0,.12);
+      color: rgba(244,247,255,.86);
+    }
+
+    .status.ok{border-color: rgba(52,211,153,.45)}
+    .status.bad{border-color: rgba(251,113,133,.50)}
+    .status.warn{border-color: rgba(251,191,36,.50)}
+
+    .hidden{display:none !important}
+
+    /* Modals */
+    .modal-backdrop{
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.55);
+      display:none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      z-index: 9999;
+    }
+    .modal-backdrop.show{display:flex;}
+    .modal{
+      width: min(520px, 100%);
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 22px;
+      box-shadow: 0 22px 60px rgba(0,0,0,.45);
+      backdrop-filter: blur(14px);
+      padding: 16px;
+    }
+    .modal h3{margin:0 0 8px 0}
+    .modal .actions{display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap; margin-top:12px}
+
+    .tight{max-width: 180px}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="title">
+        <div class="logo" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M7 7c6 0 10 4 10 10" stroke="rgba(56,189,248,.95)" stroke-width="2" stroke-linecap="round"/>
+            <path d="M7 11c4 0 6 2 6 6" stroke="rgba(167,139,250,.95)" stroke-width="2" stroke-linecap="round"/>
+            <path d="M7 15c2 0 2 0 2 2" stroke="rgba(244,247,255,.95)" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <h1 style="margin:0">פורטל ילדים — נקודות ופרסים</h1>
+            <span id="modePill" class="pill">מצב: בית</span>
+          </div>
+          <div class="muted">אין רשימת שמות • כניסה לפי חלק מהשם • אם יש כמה התאמות—בחירה עם שם מלא</div>
+        </div>
+      </div>
+
+      <div class="row">
+        <button id="goHomeBtn" class="btn">בית</button>
+        <button id="settingsBtn" class="icon-btn btn" title="הגדרות">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" stroke="rgba(244,247,255,.95)" stroke-width="2"/>
+            <path d="M19.4 15a8.2 8.2 0 0 0 .1-1l2-1.2-2-3.5-2.3.7a7.6 7.6 0 0 0-1.7-1l-.3-2.4H9.8l-.3 2.4a7.6 7.6 0 0 0-1.7 1l-2.3-.7-2 3.5 2 1.2a8.2 8.2 0 0 0 .1 1 8.2 8.2 0 0 0-.1 1l-2 1.2 2 3.5 2.3-.7a7.6 7.6 0 0 0 1.7 1l.3 2.4h4.4l.3-2.4a7.6 7.6 0 0 0 1.7-1l2.3.7 2-3.5-2-1.2a8.2 8.2 0 0 0-.1-1Z" stroke="rgba(199,210,254,.85)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <section class="card" id="screenContainer">
+
+        <!-- HOME -->
+        <div id="homeScreen">
+          <h2>מסך בית</h2>
+          <p class="big">הקלד שם כדי להיכנס לפורטל אישי</p>
+
+          <div class="grid2">
+            <div>
+              <label class="muted">שם הילד</label>
+              <input id="kidNameInput" placeholder="למשל: רני" autocomplete="off" />
+              <div class="row" style="margin-top:10px">
+                <button id="enterByNameBtn" class="btn primary">כניסה</button>
+                <button id="clearKidNameBtn" class="btn">נקה</button>
+              </div>
+              <p class="muted">דוגמה: כתוב "רני" וזה ימצא "רני רוט". אם יש כמה רני—תיפתח בחירה.</p>
+            </div>
+            <div>
+              <div id="homeStatus" class="status">סטטוס: מוכן</div>
+              <div class="divider"></div>
+              <div class="muted">לא מוצגים שמות בלי להקליד.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- KID PORTAL -->
+        <div id="kidPortalScreen" class="hidden">
+          <div class="row" style="justify-content:space-between">
+            <div>
+              <h2>פורטאל אישי — <span id="kidNameTitle"></span></h2>
+            </div>
+            <button id="backToHomeBtn" class="btn">חזרה לבית</button>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="row" style="justify-content:space-between">
+            <div>
+              <div class="muted">נקודות</div>
+              <div id="kidPoints" class="big">0</div>
+              <div class="row" style="margin-top:10px">
+                <button id="kidAdd10Btn" class="btn ok">+10</button>
+                <button id="kidSub10Btn" class="btn danger">-10</button>
+                <button id="kidAdd1Btn" class="btn">+1</button>
+                <button id="kidSub1Btn" class="btn">-1</button>
+              </div>
+              <div class="row" style="margin-top:10px">
+                <input id="kidCustomDelta" class="tight" type="number" min="0" step="1" placeholder="כמות אישית" />
+                <button id="kidAddCustomBtn" class="btn ok">הוסף</button>
+                <button id="kidSubCustomBtn" class="btn danger">הורד</button>
+              </div>
+              <div class="muted" style="font-size:11px;margin-top:6px">הוספה/הורדה של נקודות נעשית בתוך הפורטל האישי.</div>
+            </div>
+            <div class="badge">פורטל אישי</div>
+          </div>
+
+          <div class="divider"></div>
+
+          <h3>חנות פרסים</h3>
+          <p class="muted">אפשר לקנות רק אם יש מספיק נקודות. אחרת הפרס “נעול”.</p>
+          <div id="prizesStoreList" class="list"></div>
+        </div>
+
+        <!-- SETTINGS -->
+        <div id="settingsScreen" class="hidden">
+          <div class="row" style="justify-content:space-between">
+            <h2>הגדרות</h2>
+            <div class="row">
+              <button id="printCardsBtn" class="btn warn">הדפס כרטיסים</button>
+              <button id="closeSettingsBtn" class="btn">סגור</button>
+            </div>
+          </div>
+
+          <p class="muted">כניסה להגדרות דורשת קוד.</p>
+
+          <div class="divider"></div>
+
+          <h3>קודי ניהול</h3>
+          <div class="grid2">
+            <div>
+              <label class="muted">הוסף קוד חדש (4 ספרות)</label>
+              <input id="newAdminCode" inputmode="numeric" placeholder="לדוגמה: 2590" />
+            </div>
+            <div>
+              <label class="muted">קודים קיימים</label>
+              <div id="adminCodesList" class="list"></div>
+            </div>
+          </div>
+          <div class="row" style="margin-top:10px">
+            <button id="addAdminCodeBtn" class="btn ok">הוסף קוד</button>
+          </div>
+
+          <div class="divider"></div>
+
+          <h3>ניהול ילדים</h3>
+          <div class="grid2">
+            <div>
+              <label class="muted">שם הילד (מומלץ שם מלא)</label>
+              <input id="newKidName" placeholder="למשל: רני רוט" />
+            </div>
+            <div>
+              <label class="muted">הערה (אופציונלי)</label>
+              <input id="newKidNote" placeholder="למשל: כיתה ג׳" />
+              <div class="muted" style="font-size:11px">כשיש שני ילדים עם אותו שם פרטי, ההערה עוזרת לבחור.</div>
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:10px">
+            <button id="addKidBtn" class="btn ok">הוסף ילד</button>
+            <button id="exportBtn" class="btn">ייצוא</button>
+            <button id="importBtn" class="btn">ייבוא</button>
+            <input id="importFile" type="file" accept="application/json" class="hidden" />
+            <button id="resetDemoDataBtn" class="btn danger">איפוס נתונים</button>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="muted">רשימת ילדים (ניהול בלבד):</div>
+          <div id="kidsAdminList" class="list" style="margin-top:10px"></div>
+
+          <div class="divider"></div>
+
+          <h3>ניהול פרסים</h3>
+          <div class="grid2">
+            <div>
+              <label class="muted">שם פרס</label>
+              <input id="newPrizeName" placeholder="למשל: ארטיק" />
+            </div>
+            <div>
+              <label class="muted">מחיר בנקודות</label>
+              <input id="newPrizeCost" type="number" min="0" placeholder="למשל: 20" />
+            </div>
+          </div>
+          <div class="row" style="margin-top:10px">
+            <button id="addPrizeBtn" class="btn ok">הוסף פרס</button>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="muted">רשימת פרסים:</div>
+          <div id="adminPrizeList" class="list" style="margin-top:10px"></div>
+        </div>
+
+      </section>
+
+      <aside class="card">
+        <h2>טיפ</h2>
+        <p class="muted">כדי להקטין בלבול, תן לכל ילד שם מלא (למשל "רני רוט"). במסך הבית אפשר לכתוב רק "רני".</p>
+      </aside>
+    </main>
+  </div>
+
+  <!-- Pick kid modal (only when multiple matches) -->
+  <div id="pickKidBackdrop" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="pickKidTitle">
+    <div class="modal">
+      <h3 id="pickKidTitle">בחר ילד</h3>
+      <div class="muted">נמצאו כמה ילדים שמתאימים למה שכתבת — בחר את השם המלא:</div>
+      <div id="pickKidList" class="list" style="margin-top:10px"></div>
+      <div class="actions">
+        <button id="pickKidCancelBtn" class="btn">ביטול</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit kid modal (no prompt, works in preview) -->
+  <div id="editKidBackdrop" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="editKidTitle">
+    <div class="modal">
+      <h3 id="editKidTitle">עריכת ילד</h3>
+      <div class="muted">שנה שם / הערה ואז שמור</div>
+      <div style="margin-top:10px" class="grid2">
+        <div>
+          <label class="muted">שם</label>
+          <input id="editKidName" placeholder="שם מלא" />
+        </div>
+        <div>
+          <label class="muted">הערה</label>
+          <input id="editKidNote" placeholder="אופציונלי" />
+        </div>
+      </div>
+      <div id="editKidStatus" class="status" style="margin-top:10px">סטטוס: מוכן</div>
+      <div class="actions">
+        <button id="editKidCancelBtn" class="btn">ביטול</button>
+        <button id="editKidSaveBtn" class="btn primary">שמור</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin code modal -->
+  <div id="adminModalBackdrop" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="adminModalTitle">
+    <div class="modal">
+      <h3 id="adminModalTitle">כניסה להגדרות</h3>
+      <div class="muted">הכנס קוד ניהול (4 ספרות)</div>
+      <div style="margin-top:10px">
+        <input id="adminCodeInput" inputmode="numeric" placeholder="••••" autocomplete="one-time-code" />
+        <div id="adminModalStatus" class="status" style="margin-top:10px">סטטוס: מוכן</div>
+      </div>
+      <div class="actions">
+        <button id="adminCancelBtn" class="btn">ביטול</button>
+        <button id="adminEnterBtn" class="btn primary">כניסה</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const STORAGE_KEY = "kids_portal_name_v4";
+  const el = (id)=>document.getElementById(id);
+
+  function cryptoId(){
+    if (window.crypto?.randomUUID) return crypto.randomUUID();
+    return Math.random().toString(16).slice(2) + Date.now().toString(16);
+  }
+
+  function escapeHtml(str){
+    return String(str)
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  function normalizeName(s){
+    return String(s ?? "").trim().toLowerCase();
+  }
+
+  function tokenize(s){
+    return normalizeName(s).split(" ").filter(Boolean);
+  }
+
+  // partial + token-prefix matching:
+  // query tokens must each match the start of some token in the kid's full name.
+  // example: "רני" matches "רני רוט" and "רני כהן"
+  function findKidsByNameQuery(query){
+    const qTokens = tokenize(query);
+    if(qTokens.length === 0) return [];
+
+    return state.kids.filter(k=>{
+      const nameTokens = tokenize(k.name);
+      if(nameTokens.length === 0) return false;
+      return qTokens.every(qt => nameTokens.some(nt => nt.startsWith(qt)));
+    });
+  }
+
+  function makeDefaultState(){
+    return {
+      adminCodes: ["2590"],
+      kids: [
+        { id: cryptoId(), name: "רני רוט", note: "", points: 50 },
+        { id: cryptoId(), name: "רני כהן", note: "", points: 15 }
+      ],
+      prizes: [
+        { id: cryptoId(), name: "ארטיק", cost: 20 },
+        { id: cryptoId(), name: "שעת מסך", cost: 30 },
+        { id: cryptoId(), name: "צעצוע קטן", cost: 60 }
+      ],
+      purchases: []
+    };
+  }
+
+  function normalizeState(s){
+    if(!s || typeof s !== "object") return makeDefaultState();
+
+    s.adminCodes ??= ["2590"];
+    s.kids ??= [];
+    s.prizes ??= [];
+    s.purchases ??= [];
+
+    if(!Array.isArray(s.adminCodes)) s.adminCodes = ["2590"];
+    if(!Array.isArray(s.kids)) s.kids = [];
+    if(!Array.isArray(s.prizes)) s.prizes = [];
+    if(!Array.isArray(s.purchases)) s.purchases = [];
+
+    s.adminCodes = s.adminCodes
+      .map(c=> String(c).trim())
+      .filter(c=> /^\d{4}$/.test(c));
+    if(s.adminCodes.length === 0) s.adminCodes = ["2590"];
+
+    s.kids = s.kids.map(k=>({
+      id: String(k.id || cryptoId()),
+      name: String(k.name || ""),
+      note: String(k.note || ""),
+      points: Math.max(0, Number(k.points)||0)
+    }));
+
+    s.prizes = s.prizes.map(p=>({
+      id: String(p.id || cryptoId()),
+      name: String(p.name || ""),
+      cost: Math.max(0, Math.floor(Number(p.cost)||0))
+    }));
+
+    return s;
+  }
+
+  function loadState(){
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return makeDefaultState();
+    try{ return normalizeState(JSON.parse(raw)); }
+    catch{ return makeDefaultState(); }
+  }
+
+  function saveState(){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+
+  let state = loadState();
+
+  const screens = {
+    home: el("homeScreen"),
+    kidPortal: el("kidPortalScreen"),
+    settings: el("settingsScreen"),
+  };
+
+  let currentScreen = "home";
+  let currentKidId = null;
+
+  function showOnly(screenKey){
+    Object.entries(screens).forEach(([k,node])=>{
+      node.classList.toggle("hidden", k !== screenKey);
+    });
+  }
+
+  function setModePill(text){ el("modePill").textContent = `מצב: ${text}`; }
+
+  function setStatus(targetId, msg, kind=""){
+    const node = el(targetId);
+    node.textContent = msg;
+    node.classList.remove("ok","bad","warn");
+    if(kind) node.classList.add(kind);
+  }
+
+  function renderKidPortal(kid){
+    el("kidNameTitle").textContent = kid.name;
+    el("kidPoints").textContent = kid.points;
+
+    const box = el("prizesStoreList");
+    box.innerHTML = "";
+
+    if(state.prizes.length === 0){
+      box.innerHTML = `<div class="status bad">אין פרסים בחנות. הוסף בהגדרות.</div>`;
+      return;
+    }
+
+    state.prizes
+      .slice()
+      .sort((a,b)=> a.cost - b.cost)
+      .forEach(prize=>{
+        const canBuy = kid.points >= prize.cost;
+        const div = document.createElement("div");
+        div.className = "item";
+        div.innerHTML = `
+          <div>
+            <strong>${escapeHtml(prize.name)}</strong>
+            <div class="muted">מחיר: ${prize.cost} נק׳</div>
+          </div>
+          <div class="row">
+            ${canBuy ? `<button class="btn ok" data-buy="${prize.id}">קנה</button>` : `<span class="badge">נעול</span>`}
+          </div>
+        `;
+        box.appendChild(div);
+
+        if(canBuy){
+          div.querySelector("[data-buy]").addEventListener("click", ()=> buyPrize(kid.id, prize.id));
+        }
+      });
+  }
+
+  function renderKidsAdminList(){
+    const box = el("kidsAdminList");
+    box.innerHTML = "";
+
+    if(state.kids.length === 0){
+      box.innerHTML = `<div class="status bad">אין ילדים עדיין.</div>`;
+      return;
+    }
+
+    state.kids
+      .slice()
+      .sort((a,b)=> a.name.localeCompare(b.name,"he"))
+      .forEach(k=>{
+        const div = document.createElement("div");
+        div.className = "item";
+        div.innerHTML = `
+          <div>
+            <strong>${escapeHtml(k.name)}</strong>
+            ${k.note ? `<div class="muted">${escapeHtml(k.note)}</div>` : ``}
+            <div class="muted">נקודות: ${k.points}</div>
+          </div>
+          <div class="row">
+            <button class="btn" data-rename="${k.id}">ערוך</button>
+            <button class="btn danger" data-del="${k.id}">מחק</button>
+          </div>
+        `;
+        box.appendChild(div);
+      });
+
+    box.querySelectorAll("[data-del]").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const id = btn.getAttribute("data-del");
+        state.kids = state.kids.filter(k=>k.id !== id);
+        state.purchases = state.purchases.filter(p=>p.kidId !== id);
+        if(currentKidId === id) gotoHome();
+        saveState();
+        rerenderAll();
+      });
+    });
+
+    box.querySelectorAll("[data-rename]").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const id = btn.getAttribute("data-rename");
+        openEditKidModal(id);
+      });
+    });
+  }
+
+  function renderAdminPrizeList(){
+    const box = el("adminPrizeList");
+    box.innerHTML = "";
+
+    if(state.prizes.length === 0){
+      box.innerHTML = `<div class="status bad">אין פרסים. הוסף למעלה.</div>`;
+      return;
+    }
+
+    state.prizes
+      .slice()
+      .sort((a,b)=> a.cost - b.cost)
+      .forEach(p=>{
+        const div = document.createElement("div");
+        div.className = "item";
+        div.innerHTML = `
+          <div>
+            <strong>${escapeHtml(p.name)}</strong>
+            <div class="muted">מחיר: ${p.cost} נק׳</div>
+          </div>
+          <div class="row">
+            <button class="btn" data-editprize="${p.id}">ערוך</button>
+            <button class="btn danger" data-delprize="${p.id}">מחק</button>
+          </div>
+        `;
+        box.appendChild(div);
+      });
+
+    box.querySelectorAll("[data-delprize]").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const id = btn.getAttribute("data-delprize");
+        state.prizes = state.prizes.filter(p=>p.id !== id);
+        saveState();
+        rerenderAll();
+      });
+    });
+
+    box.querySelectorAll("[data-editprize]").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const id = btn.getAttribute("data-editprize");
+        const prize = state.prizes.find(p=>p.id === id);
+        if(!prize) return;
+
+        const newName = prompt("שם פרס:", prize.name);
+        if(newName == null) return;
+        const nn = String(newName).trim();
+        if(!nn){ alert("שם לא יכול להיות ריק"); return; }
+
+        const newCost = prompt("מחיר נקודות:", String(prize.cost));
+        if(newCost == null) return;
+        const c = Math.floor(Number(newCost));
+        if(!Number.isFinite(c) || c < 0){ alert("מחיר לא תקין"); return; }
+
+        prize.name = nn;
+        prize.cost = c;
+        saveState();
+        rerenderAll();
+      });
+    });
+  }
+
+  let editKidId = null;
+
+  function updateKidFields(kidId, name, note){
+    const kid = state.kids.find(k=>k.id===kidId);
+    if(!kid) return false;
+    const nn = String(name ?? "").trim();
+    if(!nn) return false;
+    kid.name = nn;
+    kid.note = String(note ?? "").trim();
+    return true;
+  }
+
+  function openEditKidModal(kidId){
+    const kid = state.kids.find(k=>k.id===kidId);
+    if(!kid) return;
+    editKidId = kid.id;
+    el("editKidName").value = kid.name;
+    el("editKidNote").value = kid.note || "";
+    const st = el("editKidStatus");
+    st.textContent = "סטטוס: מוכן";
+    st.classList.remove("ok","bad","warn");
+    el("editKidBackdrop").classList.add("show");
+    setTimeout(()=> el("editKidName").focus(), 0);
+  }
+
+  function closeEditKidModal(){
+    el("editKidBackdrop").classList.remove("show");
+    editKidId = null;
+  }
+
+  function saveEditKid(){
+    const st = el("editKidStatus");
+    st.classList.remove("ok","bad","warn");
+
+    const ok = updateKidFields(editKidId, el("editKidName").value, el("editKidNote").value);
+    if(!ok){
+      st.textContent = "שם לא יכול להיות ריק ❌";
+      st.classList.add("bad");
+      return;
+    }
+
+    saveState();
+    rerenderAll();
+    st.textContent = "נשמר ✅";
+    st.classList.add("ok");
+    closeEditKidModal();
+  }
+
+  function renderAdminCodes(){
+    const box = el("adminCodesList");
+    box.innerHTML = "";
+
+    const codes = [...state.adminCodes];
+    codes.forEach(code=>{
+      const div = document.createElement("div");
+      div.className = "item";
+      div.innerHTML = `
+        <div>
+          <strong>${escapeHtml(code)}</strong>
+          <div class="muted">קוד ניהול</div>
+        </div>
+        <div class="row">
+          <button class="btn danger" data-delcode="${escapeHtml(code)}">מחק</button>
+        </div>
+      `;
+      box.appendChild(div);
+    });
+
+    box.querySelectorAll("[data-delcode]").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const code = btn.getAttribute("data-delcode");
+        if(state.adminCodes.length <= 1){
+          alert("חייב להישאר לפחות קוד אחד.");
+          return;
+        }
+        state.adminCodes = state.adminCodes.filter(c=>c !== code);
+        saveState();
+        renderAdminCodes();
+      });
+    });
+  }
+
+  function rerenderAll(){
+    if(currentScreen === "settings"){
+      renderAdminCodes();
+      renderKidsAdminList();
+      renderAdminPrizeList();
+    }
+    if(currentKidId && currentScreen === "kidPortal"){
+      const kid = state.kids.find(k=>k.id===currentKidId);
+      if(kid) renderKidPortal(kid);
+    }
+  }
+
+  function gotoHome(){
+    currentScreen = "home";
+    currentKidId = null;
+    showOnly("home");
+    setModePill("בית");
+    setStatus("homeStatus", "סטטוס: מוכן");
+  }
+
+  function gotoSettingsDirect(){
+    currentScreen = "settings";
+    showOnly("settings");
+    setModePill("הגדרות");
+    rerenderAll();
+  }
+
+  function openKidPortal(kidId){
+    const kid = state.kids.find(k=>k.id===kidId);
+    if(!kid) return;
+    currentKidId = kid.id;
+    currentScreen = "kidPortal";
+    showOnly("kidPortal");
+    setModePill("פורטל ילד");
+    renderKidPortal(kid);
+  }
+
+  function adjustPoints(kidId, delta){
+    const kid = state.kids.find(k=>k.id===kidId);
+    if(!kid) return;
+    kid.points = Math.max(0, (Number(kid.points)||0) + delta);
+    saveState();
+    if(currentScreen === "kidPortal" && currentKidId === kidId){
+      el("kidPoints").textContent = kid.points;
+      renderKidPortal(kid);
+    }
+  }
+
+  function buyPrize(kidId, prizeId){
+    const kid = state.kids.find(k=>k.id === kidId);
+    const prize = state.prizes.find(p=>p.id === prizeId);
+    if(!kid || !prize) return;
+
+    if(kid.points < prize.cost){
+      alert("אין מספיק נקודות לקנייה.");
+      return;
+    }
+
+    kid.points -= prize.cost;
+    state.purchases.push({
+      id: cryptoId(),
+      kidId: kid.id,
+      prizeId: prize.id,
+      prizeName: prize.name,
+      cost: prize.cost,
+      atISO: new Date().toISOString()
+    });
+
+    saveState();
+    renderKidPortal(kid);
+  }
+
+  function buildPrintHtml(){
+    const kids = [...state.kids].sort((a,b)=> a.name.localeCompare(b.name,"he"));
+
+    return `<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>הדפסת כרטיסים</title>
+<style>
+  @page { size: A4; margin: 10mm; }
+  body{ font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans Hebrew", sans-serif; margin:0; }
+  .grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 8mm; }
+  .card{ border: 1px solid #111; border-radius: 10px; padding: 8mm; height: 52mm; display:flex; flex-direction:column; justify-content:space-between; }
+  .name{ font-size: 14pt; font-weight: 800; }
+  .note{ font-size: 10pt; color:#333; }
+  .hint{ font-size: 9pt; color:#333; }
+  .top{ display:flex; justify-content:space-between; align-items:flex-start; gap: 6mm; }
+  .tag{ font-size: 9pt; border: 1px solid #333; border-radius: 999px; padding: 2mm 3mm; }
+  .printbar{ display:flex; gap: 8px; padding: 10px 0; align-items:center; }
+  button{ padding: 8px 10px; border-radius: 10px; border:1px solid #111; background:#fff; cursor:pointer; }
+  @media print { .printbar{ display:none; } }
+</style>
+</head>
+<body>
+  <div class="printbar">
+    <button onclick="window.print()">הדפס</button>
+    <button onclick="window.close()">סגור</button>
+    <div style="font-size:10pt;color:#333">כרטיסים קטנים: 3 בעמוד לרוחב, כמה שייכנס.</div>
+  </div>
+  <div class="grid">
+    ${kids.map(k=>`
+      <div class="card">
+        <div class="top">
+          <div>
+            <div class="name">${escapeHtml(k.name)}</div>
+            ${k.note ? `<div class="note">${escapeHtml(k.note)}</div>` : `<div class="note">&nbsp;</div>`}
+            <div class="hint">כרטיס כניסה לפורטל</div>
+          </div>
+          <div class="tag">Kids Portal</div>
+        </div>
+        <div class="hint">כניסה: הקלידו חלק מהשם במסך הבית</div>
+      </div>
+    `).join("")}
+  </div>
+</body>
+</html>`;
+  }
+
+  function openPrintCards(){
+    const html = buildPrintHtml();
+    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const w = window.open(url, "_blank");
+    if(!w){
+      alert("הדפדפן חסם חלון חדש. אפשר לאפשר Popups ואז לנסות שוב.");
+      URL.revokeObjectURL(url);
+      return;
+    }
+    setTimeout(()=> URL.revokeObjectURL(url), 10_000);
+  }
+
+  // ----- Pick kid modal -----
+  function openPickKidModal(matches){
+    const bd = el("pickKidBackdrop");
+    const list = el("pickKidList");
+    list.innerHTML = "";
+
+    matches
+      .slice()
+      .sort((a,b)=> a.name.localeCompare(b.name,"he"))
+      .forEach(k=>{
+        const div = document.createElement("div");
+        div.className = "item";
+        div.innerHTML = `
+          <div>
+            <strong>${escapeHtml(k.name)}</strong>
+            ${k.note ? `<div class="muted">${escapeHtml(k.note)}</div>` : `<div class="muted">&nbsp;</div>`}
+          </div>
+          <div class="row">
+            <button class="btn primary" data-pick="${k.id}">בחר</button>
+          </div>
+        `;
+        list.appendChild(div);
+      });
+
+    list.querySelectorAll("[data-pick]").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const id = btn.getAttribute("data-pick");
+        closePickKidModal();
+        openKidPortal(id);
+      });
+    });
+
+    bd.classList.add("show");
+  }
+
+  function closePickKidModal(){
+    el("pickKidBackdrop").classList.remove("show");
+    el("pickKidList").innerHTML = "";
+  }
+
+  // ----- Admin modal -----
+  function validateAdminCode(code){
+    const c = String(code ?? "").trim();
+    return state.adminCodes.includes(c);
+  }
+
+  function openAdminModal(){
+    const bd = el("adminModalBackdrop");
+    const input = el("adminCodeInput");
+    const st = el("adminModalStatus");
+    input.value = "";
+    st.textContent = "סטטוס: מוכן";
+    st.classList.remove("ok","bad","warn");
+    bd.classList.add("show");
+    setTimeout(()=> input.focus(), 0);
+  }
+
+  function closeAdminModal(){
+    el("adminModalBackdrop").classList.remove("show");
+  }
+
+  function tryAdminEnter(){
+    const code = el("adminCodeInput").value;
+    const st = el("adminModalStatus");
+    st.classList.remove("ok","bad","warn");
+    if(validateAdminCode(code)){
+      st.textContent = "נכון ✅";
+      st.classList.add("ok");
+      closeAdminModal();
+      gotoSettingsDirect();
+      return;
+    }
+    st.textContent = "קוד שגוי ❌";
+    st.classList.add("bad");
+  }
+
+  function enterByNameFlow(){
+    const q = el("kidNameInput").value;
+    const matches = findKidsByNameQuery(q);
+
+    if(matches.length === 0){
+      setStatus("homeStatus", "לא נמצא ילד עם השם הזה ❌", "bad");
+      return;
+    }
+
+    if(matches.length === 1){
+      setStatus("homeStatus", "נמצא ✅ נכנס לפורטל...", "ok");
+      openKidPortal(matches[0].id);
+      return;
+    }
+
+    setStatus("homeStatus", "נמצאו כמה ילדים — בחר מהרשימה עם השמות המלאים.", "warn");
+    openPickKidModal(matches);
+  }
+
+  function parseCustomDelta(){
+    const raw = el("kidCustomDelta").value;
+    const n = Math.floor(Number(raw));
+    if(!Number.isFinite(n) || n < 0) return null;
+    return n;
+  }
+
+  // ---------- events ----------
+  el("goHomeBtn").addEventListener("click", gotoHome);
+  el("backToHomeBtn").addEventListener("click", gotoHome);
+  el("closeSettingsBtn").addEventListener("click", gotoHome);
+
+  el("settingsBtn").addEventListener("click", openAdminModal);
+
+  el("enterByNameBtn").addEventListener("click", enterByNameFlow);
+  el("kidNameInput").addEventListener("keydown", (e)=>{ if(e.key === "Enter") enterByNameFlow(); });
+
+  el("clearKidNameBtn").addEventListener("click", ()=>{
+    el("kidNameInput").value = "";
+    setStatus("homeStatus", "סטטוס: מוכן");
+  });
+
+  // points in portal
+  el("kidAdd10Btn").addEventListener("click", ()=> currentKidId && adjustPoints(currentKidId, +10));
+  el("kidSub10Btn").addEventListener("click", ()=> currentKidId && adjustPoints(currentKidId, -10));
+  el("kidAdd1Btn").addEventListener("click", ()=> currentKidId && adjustPoints(currentKidId, +1));
+  el("kidSub1Btn").addEventListener("click", ()=> currentKidId && adjustPoints(currentKidId, -1));
+
+  el("kidAddCustomBtn").addEventListener("click", ()=>{
+    if(!currentKidId) return;
+    const n = parseCustomDelta();
+    if(n == null) return alert("כמות אישית לא תקינה");
+    adjustPoints(currentKidId, +n);
+  });
+  el("kidSubCustomBtn").addEventListener("click", ()=>{
+    if(!currentKidId) return;
+    const n = parseCustomDelta();
+    if(n == null) return alert("כמות אישית לא תקינה");
+    adjustPoints(currentKidId, -n);
+  });
+
+  // pick kid modal events
+  el("pickKidCancelBtn").addEventListener("click", closePickKidModal);
+  el("pickKidBackdrop").addEventListener("click", (e)=>{ if(e.target===el("pickKidBackdrop")) closePickKidModal(); });
+
+  // edit kid modal events
+  el("editKidCancelBtn").addEventListener("click", closeEditKidModal);
+  el("editKidSaveBtn").addEventListener("click", saveEditKid);
+  el("editKidName").addEventListener("keydown", (e)=>{ if(e.key==="Enter") saveEditKid(); });
+  el("editKidBackdrop").addEventListener("click", (e)=>{ if(e.target===el("editKidBackdrop")) closeEditKidModal(); });
+
+  // admin modal events
+  el("adminCancelBtn").addEventListener("click", closeAdminModal);
+  el("adminEnterBtn").addEventListener("click", tryAdminEnter);
+  el("adminCodeInput").addEventListener("keydown", (e)=>{ if(e.key==="Enter") tryAdminEnter(); });
+  el("adminModalBackdrop").addEventListener("click", (e)=>{ if(e.target===el("adminModalBackdrop")) closeAdminModal(); });
+
+  el("printCardsBtn").addEventListener("click", openPrintCards);
+
+  el("addAdminCodeBtn").addEventListener("click", ()=>{
+    const raw = String(el("newAdminCode").value).trim();
+    if(!/^\d{4}$/.test(raw)) return alert("קוד חייב להיות 4 ספרות");
+    if(state.adminCodes.includes(raw)) return alert("הקוד כבר קיים");
+    state.adminCodes.push(raw);
+    el("newAdminCode").value = "";
+    saveState();
+    renderAdminCodes();
+  });
+
+  el("addKidBtn").addEventListener("click", ()=>{
+    const name = String(el("newKidName").value).trim();
+    const note = String(el("newKidNote").value).trim();
+    if(!name) return alert("צריך למלא שם.");
+
+    state.kids.push({ id: cryptoId(), name, note, points: 0 });
+    el("newKidName").value = "";
+    el("newKidNote").value = "";
+    saveState();
+    rerenderAll();
+  });
+
+  el("addPrizeBtn").addEventListener("click", ()=>{
+    const name = el("newPrizeName").value.trim();
+    const cost = Number(el("newPrizeCost").value);
+    if(!name || !Number.isFinite(cost) || cost < 0) return alert("נא להזין שם פרס ומחיר נקודות תקין.");
+
+    state.prizes.push({ id: cryptoId(), name, cost: Math.floor(cost) });
+    el("newPrizeName").value = "";
+    el("newPrizeCost").value = "";
+    saveState();
+    rerenderAll();
+  });
+
+  el("exportBtn").addEventListener("click", ()=>{
+    const blob = new Blob([JSON.stringify(state, null, 2)], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "kids-portal-data.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  el("importBtn").addEventListener("click", ()=>{ el("importFile").click(); });
+
+  el("importFile").addEventListener("change", async (e)=>{
+    const file = e.target.files?.[0];
+    if(!file) return;
+    try{
+      const text = await file.text();
+      state = normalizeState(JSON.parse(text));
+      saveState();
+      alert("ייבוא הצליח ✅");
+      rerenderAll();
+      gotoHome();
+    }catch{
+      alert("ייבוא נכשל. בדוק שהקובץ הוא JSON תקין.");
+    }finally{
+      el("importFile").value = "";
+    }
+  });
+
+  el("resetDemoDataBtn").addEventListener("click", ()=>{
+    if(!confirm("לאפס את כל הנתונים?")) return;
+    state = makeDefaultState();
+    saveState();
+    gotoHome();
+  });
+
+  // --- tests ---
+  function assert(cond, msg){ if(!cond) throw new Error("TEST FAIL: " + msg); }
+  function runTests(){
+    assert(normalizeName("  רני ") === normalizeName("רני"), "normalizeName should trim");
+
+    // points never below 0
+    const kid = { id: "k1", name: "טסט", note: "", points: 0 };
+    state.kids = [kid];
+    adjustPoints("k1", -10);
+    assert(state.kids[0].points === 0, "points should not go below 0");
+
+    // query matching: partial first name
+    state.kids = [
+      {id:"a",name:"רני רוט",note:"",points:0},
+      {id:"b",name:"רני כהן",note:"",points:0},
+      {id:"c",name:"אלון לוי",note:"",points:0},
+    ];
+    const m1 = findKidsByNameQuery("רני");
+    assert(m1.length === 2, "query 'רני' should match two kids");
+    const m2 = findKidsByNameQuery("רני ר");
+    assert(m2.length === 1 && m2[0].id === "a", "query 'רני ר' should match רני רוט");
+
+    // admin code validation
+    state.adminCodes = ["2590","1234"]; 
+    assert(validateAdminCode("2590") === true, "validateAdminCode should accept existing code");
+    assert(validateAdminCode("0000") === false, "validateAdminCode should reject wrong code");
+
+    // edit kid pure update
+    state.kids = [{id:"k",name:"ישן",note:"",points:0}];
+    assert(updateKidFields("k","חדש","הערה") === true, "updateKidFields should succeed");
+    assert(state.kids[0].name === "חדש" && state.kids[0].note === "הערה", "updateKidFields should update fields");
+    assert(updateKidFields("k","   ","x") === false, "updateKidFields should reject empty name");
+
+    console.log("All tests passed ✅");
+  }
+
+  // init
+  (function init(){
+    if(!localStorage.getItem(STORAGE_KEY)) saveState();
+    gotoHome();
+    if(location.hash === "#test") runTests();
+  })();
+</script>
+</body>
+</html>

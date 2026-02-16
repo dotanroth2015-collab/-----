@@ -1,0 +1,2052 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>פורטל ילדים — נקודות ופרסים</title>
+  <style>
+    :root{
+      --text:#f4f7ff;
+      --muted:#c7d2fe;
+      --card: rgba(255,255,255,.10);
+      --stroke: rgba(255,255,255,.16);
+      --shadow: 0 18px 45px rgba(0,0,0,.35);
+      --radius: 22px;
+      --ok:#34d399;
+      --danger:#fb7185;
+      --warn:#fbbf24;
+      --info:#60a5fa;
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans Hebrew", sans-serif;
+      color: var(--text);
+      min-height:100vh;
+      display:flex;
+      justify-content:center;
+      padding: 18px;
+      background:
+        radial-gradient(900px 600px at 5% 10%, rgba(56,189,248,.34), transparent 60%),
+        radial-gradient(900px 600px at 95% 5%, rgba(167,139,250,.36), transparent 55%),
+        radial-gradient(800px 520px at 15% 95%, rgba(251,191,36,.26), transparent 60%),
+        radial-gradient(900px 600px at 90% 90%, rgba(52,211,153,.26), transparent 62%),
+        linear-gradient(180deg, #0b1220, #08102a 40%, #070a18);
+    }
+
+    .app{width: min(1080px, 100%); display:grid; gap:14px;}
+
+    header{
+      display:flex; align-items:center; justify-content:space-between;
+      padding: 14px 16px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    header .title{display:flex; gap:10px; align-items:center;}
+
+    .logo{
+      width:40px;height:40px;border-radius:16px;display:grid;place-items:center;
+      background: rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.18);
+      font-size:18px;
+    }
+
+    .pill{
+      font-size:12px; padding:6px 10px; border-radius:999px;
+      border:1px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.08);
+      color: rgba(244,247,255,.90);
+    }
+
+    .btn, button{
+      cursor:pointer;
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.08);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 16px;
+      transition: transform .05s ease, border-color .2s ease, background .2s ease;
+      box-shadow: 0 10px 22px rgba(0,0,0,.25);
+    }
+    .btn:hover{border-color: rgba(255,255,255,.35)}
+    .btn:active{transform: translateY(1px)}
+
+    .btn.primary{
+      background: linear-gradient(135deg, rgba(56,189,248,.22), rgba(167,139,250,.22));
+      border-color: rgba(56,189,248,.38);
+    }
+    .btn.ok{border-color: rgba(52,211,153,.42); background: rgba(52,211,153,.12)}
+    .btn.danger{border-color: rgba(251,113,133,.45); background: rgba(251,113,133,.12)}
+    .btn.warn{border-color: rgba(251,191,36,.45); background: rgba(251,191,36,.12)}
+    .btn.info{border-color: rgba(96,165,250,.45); background: rgba(96,165,250,.12)}
+
+    .icon-btn{width:44px; height:44px; display:grid; place-items:center; border-radius: 16px;}
+
+    main{display:grid; gap:14px; grid-template-columns: 1.25fr .75fr;}
+    @media (max-width: 920px){ main{grid-template-columns: 1fr} }
+
+    .card{
+      background: var(--card);
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px;
+      backdrop-filter: blur(12px);
+    }
+
+    h1,h2,h3{margin:0 0 10px 0}
+    h1{font-size:18px}
+    h2{font-size:16px}
+    h3{font-size:14px}
+
+    p{margin: 8px 0; color: rgba(244,247,255,.82); line-height:1.5}
+
+    .muted{color: rgba(199,210,254,.92); font-size: 12px}
+    .big{font-size: 26px; letter-spacing: .2px; margin: 0 0 6px 0;}
+    .divider{height:1px; background: rgba(255,255,255,.14); margin: 12px 0;}
+
+    .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+    .grid2{display:grid; grid-template-columns: 1fr 1fr; gap:10px}
+    @media (max-width:520px){.grid2{grid-template-columns:1fr}}
+
+    input, textarea{
+      width:100%;
+      padding: 10px 12px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(0,0,0,.18);
+      color: var(--text);
+      outline:none;
+    }
+    textarea{resize: vertical}
+    input::placeholder, textarea::placeholder{color: rgba(199,210,254,.75)}
+
+    .list{display:grid; gap:10px}
+
+    .badge{
+      font-size:12px; padding: 6px 10px; border-radius: 999px;
+      border:1px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.08);
+      white-space:nowrap;
+    }
+
+    .status{
+      font-size:12px; padding: 8px 10px; border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(0,0,0,.12);
+      color: rgba(244,247,255,.86);
+    }
+    .status.ok{border-color: rgba(52,211,153,.45)}
+    .status.bad{border-color: rgba(251,113,133,.50)}
+    .status.warn{border-color: rgba(251,191,36,.50)}
+
+    .hidden{display:none !important}
+
+    .modal-backdrop{
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.55);
+      display:none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      z-index: 9999;
+    }
+    .modal-backdrop.show{display:flex;}
+    .modal{
+      width: min(560px, 100%);
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 22px;
+      box-shadow: 0 22px 60px rgba(0,0,0,.45);
+      backdrop-filter: blur(14px);
+      padding: 16px;
+    }
+    .modal .actions{display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap; margin-top:12px}
+
+    .tight{max-width: 180px}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="title">
+        <div class="logo" aria-hidden="true">🎁</div>
+        <div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <h1 style="margin:0">פורטל ילדים — נקודות ופרסים</h1>
+            <span id="modePill" class="pill">מצב: בית</span>
+          </div>
+          <div class="muted">כניסה לפי <strong>שם מלא</strong> • שמות מוצגים רק בהגדרות • הכל נשמר במכשיר</div>
+        </div>
+      </div>
+
+      <div class="row">
+        <button id="goHomeBtn" class="btn">בית</button>
+        <button id="settingsBtn" class="icon-btn btn" title="הגדרות">⚙️</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="card" id="screenContainer">
+
+        <div id="homeScreen">
+          <p class="big">הקלד <strong>שם מלא</strong> כדי להיכנס</p>
+          <label class="muted">שם מלא</label>
+          <input id="kidNameInput" placeholder="למשל: נבו רוט" autocomplete="off" />
+          <div class="row" style="margin-top:10px">
+            <button id="enterByNameBtn" class="btn primary">כניסה</button>
+            <button id="clearKidNameBtn" class="btn">נקה</button>
+          </div>
+          <div id="homeStatus" class="status" style="margin-top:10px">סטטוס: מוכן</div>
+
+          <div class="divider"></div>
+          <div id="homePrivacyNote" class="status warn">מסיבות פרטיות, לא מוצגים כאן שמות ילדים או רשימה. כדי להיכנס — הקלד שם מלא.</div>
+        </div>
+
+        <div id="kidPortalScreen" class="hidden">
+          <div class="row" style="justify-content:space-between">
+            <div>
+              <h2>פורטל אישי — <span id="kidNameTitle"></span></h2>
+              <div class="muted" id="kidNoteTitle"></div>
+            </div>
+            <button id="backToHomeBtn" class="btn">חזרה לבית</button>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="row" style="justify-content:space-between">
+            <div>
+              <div class="muted">נקודות</div>
+              <div id="kidPoints" class="big">0</div>
+            </div>
+            <div class="row">
+              <button id="kidAdd10Btn" class="btn ok">+10</button>
+              <button id="kidSub10Btn" class="btn danger">-10</button>
+              <button id="kidAdd1Btn" class="btn ok">+1</button>
+              <button id="kidSub1Btn" class="btn danger">-1</button>
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:10px">
+            <input id="kidCustomDelta" class="tight" type="number" min="0" placeholder="כמות" />
+            <button id="kidAddCustomBtn" class="btn ok">הוסף</button>
+            <button id="kidSubCustomBtn" class="btn danger">הורד</button>
+          </div>
+
+          <div class="divider"></div>
+
+          <h3>חנות פרסים</h3>
+          <div id="prizesStoreList" class="list"></div>
+        </div>
+
+        <div id="settingsScreen" class="hidden">
+          <div class="row" style="justify-content:space-between">
+            <h2>הגדרות (ניהול)</h2>
+            <div class="row">
+              <button id="printCardsBtn" class="btn warn">הדפס כרטיסים</button>
+              <button id="closeSettingsBtn" class="btn">סגור</button>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <h3>רשימת הילדים (רק כאן רואים שמות)</h3>
+          <div id="kidsAdminList" class="list" style="margin-top:10px"></div>
+
+          <div class="divider"></div>
+
+          <h3>הוספה ידנית (אופציונלי)</h3>
+          <div class="grid2">
+            <div>
+              <label class="muted">שם מלא</label>
+              <input id="newKidName" placeholder='למשל: רני רוט' />
+            </div>
+            <div>
+              <label class="muted">הערה (אופציונלי)</label>
+              <input id="newKidNote" placeholder='למשל: כיתה ג׳' />
+            </div>
+          </div>
+          <div class="row" style="margin-top:10px">
+            <button id="addKidBtn" class="btn ok">הוסף ילד (עם קוד אוטומטי)</button>
+            <button id="resetDemoDataBtn" class="btn danger">איפוס נתונים</button>
+          </div>
+
+          <div class="divider"></div>
+
+          <h3>הוספה מהירה של הרבה שמות (אופציונלי)</h3>
+          <p class="muted">אפשר להדביק רשימה “מלוכלכת” — המערכת תשמור <strong>רק שמות</strong> ותייצר לכל אחד קוד.</p>
+          <textarea id="bulkKidsInput" rows="6" placeholder="אביחי חיים שרייבר&#10;אבישג ריינר&#10;אייל בן משה"></textarea>
+          <div class="row" style="margin-top:10px">
+            <button id="bulkAddKidsBtn" class="btn ok">הוסף את כל השמות</button>
+            <button id="bulkClearKidsBtn" class="btn">נקה</button>
+          </div>
+          <div id="bulkKidsStatus" class="status" style="margin-top:10px">סטטוס: מוכן</div>
+        </div>
+
+      </section>
+
+      <aside class="card">
+        <h2>טיפ</h2>
+        <p class="muted">במסך הבית לא רואים שמות. את כל רשימת הילדים רואים רק בהגדרות (אחרי קוד ניהול).</p>
+      </aside>
+    </main>
+  </div>
+
+  <div id="adminModalBackdrop" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="adminModalTitle">
+    <div class="modal">
+      <h3 id="adminModalTitle">כניסה להגדרות</h3>
+      <div class="muted">הכנס קוד ניהול (4 ספרות)</div>
+      <div style="margin-top:10px">
+        <input id="adminCodeInput" inputmode="numeric" placeholder="••••" autocomplete="one-time-code" />
+        <div id="adminModalStatus" class="status" style="margin-top:10px">סטטוס: מוכן</div>
+      </div>
+      <div class="actions">
+        <button id="adminCancelBtn" class="btn">ביטול</button>
+        <button id="adminEnterBtn" class="btn primary">כניסה</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="pickModalBackdrop" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="pickModalTitle">
+    <div class="modal">
+      <h3 id="pickModalTitle">מצאתי כמה ילדים</h3>
+      <div class="muted">בחר את הילד שתרצה להיכנס אליו</div>
+      <div id="pickModalList" class="list" style="margin-top:12px"></div>
+      <div class="actions">
+        <button id="pickCancelBtn" class="btn">ביטול</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  "use strict";
+
+  const STORAGE_KEY = "portal_yeladim_v4";
+  const NL = String.fromCharCode(10);
+  const el = (id)=>document.getElementById(id);
+
+  function cryptoId(){
+    if (window.crypto && window.crypto.randomUUID) return crypto.randomUUID();
+    return Math.random().toString(16).slice(2) + Date.now().toString(16);
+  }
+
+  function escapeHtml(str){
+    return String(str)
+      .split("&").join("&amp;")
+      .split("<").join("&lt;")
+      .split(">").join("&gt;")
+      .split('"').join("&quot;")
+      .split("'").join("&#039;");
+  }
+
+  function normalizeName(s){
+    return String(s || "").trim().toLowerCase().replace(/\s+/g, " ");
+  }
+
+  // ===== רשימת הילדים שהבאת (נזרעת פעם אחת אם אין נתונים ב-localStorage) =====
+  const SEED_TEXT = `אביגיל עטרי
+כיתה א׳1
+1
+0 פרסים
+קוד: 454
+אביחי חיים שרייבר
+כיתה א׳1
+2
+1 פרסים
+קוד: 786
+אבישג ריינר
+כיתה א׳1
+0
+0 פרסים
+קוד: 746
+אייל בן משה
+כיתה א׳1
+0
+0 פרסים
+קוד: 659
+איתן אהרון
+כיתה א׳1
+0
+0 פרסים
+קוד: 887
+איתן צבי
+כיתה א׳1
+1
+0 פרסים
+קוד: 429
+אלרואי ספאדל
+כיתה א׳1
+0
+0 פרסים
+קוד: 291
+אמיתי מיכאל לוי
+כיתה א׳1
+0
+0 פרסים
+קוד: 850
+אסתר שמחה רדה
+כיתה א׳1
+0
+0 פרסים
+קוד: 977
+אריאל אור כהן
+כיתה א׳1
+0
+0 פרסים
+קוד: 759
+בניה מירזקנדוב
+כיתה א׳1
+0
+0 פרסים
+קוד: 296
+הילה כהן
+כיתה א׳1
+0
+0 פרסים
+קוד: 229
+חגי איתן כהן
+כיתה א׳1
+0
+0 פרסים
+קוד: 642
+יונתן הלפגוט
+כיתה א׳1
+0
+0 פרסים
+קוד: 727
+ליאל קרנסנוב
+כיתה א׳1
+0
+0 פרסים
+קוד: 290
+נבו רוט
+כיתה א׳1
+13
+16 פרסים
+קוד: 511
+נהוראי ניסים
+כיתה א׳1
+0
+0 פרסים
+קוד: 218
+נויה אריאל מגרלי
+כיתה א׳1
+0
+0 פרסים
+קוד: 551
+נויה מורן
+כיתה א׳1
+0
+0 פרסים
+קוד: 972
+נויה סקליאר
+כיתה א׳1
+0
+0 פרסים
+קוד: 637
+נועם חי
+כיתה א׳1
+0
+0 פרסים
+קוד: 797
+נעם אלי
+כיתה א׳1
+0
+0 פרסים
+קוד: 702
+נרי קדוש
+כיתה א׳1
+0
+0 פרסים
+קוד: 613
+עומר זאב קוגן
+כיתה א׳1
+0
+0 פרסים
+קוד: 132
+רפאל יפת
+כיתה א׳1
+1
+0 פרסים
+קוד: 630
+שוהם קופרשטוק
+כיתה א׳1
+0
+0 פרסים
+קוד: 126
+כיתה א׳2(27 ילדים)
+אוריה לולו
+כיתה א׳2
+0
+0 פרסים
+קוד: 306
+אושרי אזולי
+כיתה א׳2
+0
+0 פרסים
+קוד: 629
+אימרי שמואל דגן
+כיתה א׳2
+0
+0 פרסים
+קוד: 379
+איתן סגית
+כיתה א׳2
+0
+0 פרסים
+קוד: 680
+אמרי דרוק
+כיתה א׳2
+0
+0 פרסים
+קוד: 174
+הראל מרגולין
+כיתה א׳2
+0
+0 פרסים
+קוד: 917
+זהר נעמה טואיטו
+כיתה א׳2
+0
+0 פרסים
+קוד: 462
+יהונתן אספוב
+כיתה א׳2
+0
+0 פרסים
+קוד: 108
+יונתן זורנו
+כיתה א׳2
+0
+0 פרסים
+קוד: 656
+יוסף ג׳רבי
+כיתה א׳2
+0
+0 פרסים
+קוד: 546
+לביא בינימין ארגס
+כיתה א׳2
+0
+0 פרסים
+קוד: 649
+לביא שאול
+כיתה א׳2
+0
+0 פרסים
+קוד: 686
+לורן לובטון
+כיתה א׳2
+0
+0 פרסים
+קוד: 866
+מיכאל פרץ
+כיתה א׳2
+0
+0 פרסים
+קוד: 301
+נאור יצחק
+כיתה א׳2
+0
+0 פרסים
+קוד: 770
+נגה שמאה
+כיתה א׳2
+0
+0 פרסים
+קוד: 423
+נועה חנה קליגר
+כיתה א׳2
+0
+0 פרסים
+קוד: 344
+נועם אסיבנה
+כיתה א׳2
+0
+0 פרסים
+קוד: 946
+נעמי עמליה שפיצר
+כיתה א׳2
+0
+0 פרסים
+קוד: 439
+נתאנל צהי׳י
+כיתה א׳2
+0
+0 פרסים
+קוד: 443
+עופרי עדי
+כיתה א׳2
+0
+0 פרסים
+קוד: 833
+עידו טובול
+כיתה א׳2
+0
+0 פרסים
+קוד: 386
+ריף ליזה עקליאן
+כיתה א׳2
+0
+0 פרסים
+קוד: 677
+שי אלישבע שרייבר
+כיתה א׳2
+3
+0 פרסים
+קוד: 576
+שקד ברקן
+כיתה א׳2
+0
+0 פרסים
+קוד: 329
+שקד גלבוע
+כיתה א׳2
+0
+0 פרסים
+קוד: 856
+תמר קידסט אינשט
+כיתה א׳2
+0
+0 פרסים
+קוד: 532
+כיתה א׳3(11 ילדים)
+איתי נתן פריי
+כיתה א׳3
+0
+0 פרסים
+קוד: 350
+אליה יעקב
+כיתה א׳3
+0
+0 פרסים
+קוד: 458
+אמלקו מהרט
+כיתה א׳3
+0
+0 פרסים
+קוד: 755
+אסף חיים גוטסמן
+כיתה א׳3
+0
+0 פרסים
+קוד: 104
+אסף יעקבי
+כיתה א׳3
+0
+0 פרסים
+קוד: 700
+ארבל תורג׳מן
+כיתה א׳3
+0
+0 פרסים
+קוד: 402
+דוד חיי אמארה
+כיתה א׳3
+0
+0 פרסים
+קוד: 695
+דור חפץ
+כיתה א׳3
+0
+0 פרסים
+קוד: 990
+נביו אלמו
+כיתה א׳3
+0
+0 פרסים
+קוד: 844
+נווה אמינוב
+כיתה א׳3
+0
+0 פרסים
+קוד: 421
+רפאל מנחם דרשן
+כיתה א׳3
+0
+0 פרסים
+קוד: 323
+כיתה א׳4(32 ילדים)
+אביה לוי
+כיתה א׳4
+0
+0 פרסים
+קוד: 224
+אביעד חיים זוהר
+כיתה א׳4
+0
+0 פרסים
+קוד: 742
+אגם שלומוב
+כיתה א׳4
+0
+0 פרסים
+קוד: 558
+אווה עזריה
+כיתה א׳4
+0
+0 פרסים
+קוד: 604
+אורי בן שטרית
+כיתה א׳4
+0
+0 פרסים
+קוד: 562
+אוריאן אוחנה
+כיתה א׳4
+0
+0 פרסים
+קוד: 189
+אייל בלונדר
+כיתה א׳4
+0
+0 פרסים
+קוד: 925
+אילה וייס
+כיתה א׳4
+0
+0 פרסים
+קוד: 756
+איתי בנימיני
+כיתה א׳4
+1
+0 פרסים
+קוד: 910
+איתן ורון
+כיתה א׳4
+0
+0 פרסים
+קוד: 986
+אלין בדיר עובדיה
+כיתה א׳4
+0
+0 פרסים
+קוד: 951
+אמיתי שלמה אליעזר
+כיתה א׳4
+1
+0 פרסים
+קוד: 557
+אריאל בן יצחק
+כיתה א׳4
+0
+0 פרסים
+קוד: 190
+דניאל וקנין
+כיתה א׳4
+0
+0 פרסים
+קוד: 425
+הדסה מאמאליה
+כיתה א׳4
+0
+0 פרסים
+קוד: 193
+טוהר אטש
+כיתה א׳4
+0
+0 פרסים
+קוד: 502
+יובל ליבר
+כיתה א׳4
+0
+0 פרסים
+קוד: 292
+יונתן יוסף קייזר
+כיתה א׳4
+0
+0 פרסים
+קוד: 599
+יותם בן ציון
+כיתה א׳4
+1
+0 פרסים
+קוד: 424
+יותם שמשון דיקר
+כיתה א׳4
+0
+0 פרסים
+קוד: 376
+יעל וסרשטרום
+כיתה א׳4
+0
+0 פרסים
+קוד: 741
+ישי יצחק חסן
+כיתה א׳4
+0
+0 פרסים
+קוד: 848
+ישי רנד
+כיתה א׳4
+0
+0 פרסים
+קוד: 534
+כרמי ינון אטיאס
+כיתה א׳4
+0
+0 פרסים
+קוד: 348
+לביא דוידוף
+כיתה א׳4
+0
+0 פרסים
+קוד: 897
+מיכאל צבי שלזינגר
+כיתה א׳4
+0
+0 פרסים
+קוד: 809
+נועם נתן ורון
+כיתה א׳4
+0
+0 פרסים
+קוד: 939
+עידן לאופר
+כיתה א׳4
+0
+0 פרסים
+קוד: 166
+ענת אסתר סיידה
+כיתה א׳4
+0
+0 פרסים
+קוד: 103
+רפאל יעקב סילקו
+כיתה א׳4
+0
+0 פרסים
+קוד: 763
+שי גרבי
+כיתה א׳4
+1
+0 פרסים
+קוד: 150
+שירה הלוי
+כיתה א׳4
+0
+0 פרסים
+קוד: 605
+כיתה א׳5(4 ילדים)
+אביב רובין
+כיתה א׳5
+0
+0 פרסים
+קוד: 552
+אביה זילברפרב
+כיתה א׳5
+0
+0 פרסים
+קוד: 704
+אביעד שרץ
+כיתה א׳5
+0
+0 פרסים
+קוד: 535
+אוריין ספיר
+כיתה א׳5
+0
+0 פרסים
+קוד: 403
+כיתה ב׳1(30 ילדים)
+אביב דורי
+כיתה ב׳1
+0
+0 פרסים
+קוד: 220
+אברהם גבריאל מינוחין
+כיתה ב׳1
+0
+0 פרסים
+קוד: 623
+אופיר גזית
+כיתה ב׳1
+0
+0 פרסים
+קוד: 205
+אוראל ודאויקר
+כיתה ב׳1
+0
+0 פרסים
+קוד: 289
+אוראל לרר
+כיתה ב׳1
+1
+0 פרסים
+קוד: 996
+איתי הושמנד
+כיתה ב׳1
+0
+0 פרסים
+קוד: 884
+איתן חוסרוון
+כיתה ב׳1
+0
+0 פרסים
+קוד: 392
+אמה ארד
+כיתה ב׳1
+0
+0 פרסים
+קוד: 529
+ארי הולנדר
+כיתה ב׳1
+0
+0 פרסים
+קוד: 107
+גל ליאני
+כיתה ב׳1
+0
+0 פרסים
+קוד: 974
+דוד עמירם יחזקאלי
+כיתה ב׳1
+0
+0 פרסים
+קוד: 406
+דניאל אברהם דאוס
+כיתה ב׳1
+0
+0 פרסים
+קוד: 853
+דניאל יצחק יחזקאל
+כיתה ב׳1
+0
+0 פרסים
+קוד: 830
+דקל ברוך נחיאס
+כיתה ב׳1
+0
+0 פרסים
+קוד: 641
+הלל טרבלסי
+כיתה ב׳1
+0
+0 פרסים
+קוד: 466
+טל כהן חושן
+כיתה ב׳1
+0
+0 פרסים
+קוד: 804
+כפיר אלי
+כיתה ב׳1
+0
+0 פרסים
+קוד: 351
+ליבי ניצה כהן
+כיתה ב׳1
+0
+0 פרסים
+קוד: 921
+ליה זגורי
+כיתה ב׳1
+0
+0 פרסים
+קוד: 333
+לייה גבריאלה פרי בוסקילה
+כיתה ב׳1
+0
+0 פרסים
+קוד: 409
+מיה הרייתי
+כיתה ב׳1
+0
+0 פרסים
+קוד: 165
+מיה שוקר
+כיתה ב׳1
+0
+0 פרסים
+קוד: 962
+מיכל גליק
+כיתה ב׳1
+0
+0 פרסים
+קוד: 481
+רוי חיים מזרחי
+כיתה ב׳1
+0
+0 פרסים
+קוד: 784
+רומי לוי מהצרי
+כיתה ב׳1
+0
+0 פרסים
+קוד: 638
+רוני אסתר אומן
+כיתה ב׳1
+0
+0 פרסים
+קוד: 836
+רות עמנואל פרידר
+כיתה ב׳1
+0
+0 פרסים
+קוד: 133
+רינה סמינוב
+כיתה ב׳1
+0
+0 פרסים
+קוד: 202
+שי ורדי
+כיתה ב׳1
+0
+0 פרסים
+קוד: 448
+תמרה בלה חברון
+כיתה ב׳1
+0
+0 פרסים
+קוד: 474
+כיתה ב׳2(29 ילדים)
+אברהם איתן סבג
+כיתה ב׳2
+0
+0 פרסים
+קוד: 758
+אור הודיה מרקוס
+כיתה ב׳2
+0
+0 פרסים
+קוד: 556
+אורי רייזל רבינוביץ
+כיתה ב׳2
+0
+0 פרסים
+קוד: 252
+אוריה שטיפלמן
+כיתה ב׳2
+0
+0 פרסים
+קוד: 159
+אושר מיכאל ערוסי לוי
+כיתה ב׳2
+0
+0 פרסים
+קוד: 445
+אושרת טספהון
+כיתה ב׳2
+0
+0 פרסים
+קוד: 851
+אחיה עמנואל פלמר
+כיתה ב׳2
+0
+0 פרסים
+קוד: 886
+איתמר עראסי
+כיתה ב׳2
+0
+0 פרסים
+קוד: 650
+איתן אברהם קוזר
+כיתה ב׳2
+0
+0 פרסים
+קוד: 672
+איתן תמרי
+כיתה ב׳2
+0
+0 פרסים
+קוד: 493
+הילה חנה סלע
+כיתה ב׳2
+0
+0 פרסים
+קוד: 356
+הלל שרה שפירא
+כיתה ב׳2
+0
+0 פרסים
+קוד: 973
+יאיר יצחק גוסקין
+כיתה ב׳2
+0
+0 פרסים
+קוד: 178
+יהונתן משה כהן
+כיתה ב׳2
+0
+0 פרסים
+קוד: 935
+יולי ויקטורי סעאת בושרי
+כיתה ב׳2
+0
+0 פרסים
+קוד: 960
+ליאו דוד חן
+כיתה ב׳2
+0
+0 פרסים
+קוד: 256
+ליאל אנדאייהו
+כיתה ב׳2
+0
+0 פרסים
+קוד: 970
+ליבר כברה
+כיתה ב׳2
+0
+0 פרסים
+קוד: 399
+לירן רוזנוביץ
+כיתה ב׳2
+0
+0 פרסים
+קוד: 867
+מיה חן
+כיתה ב׳2
+0
+0 פרסים
+קוד: 823
+מלאכי פרנק
+כיתה ב׳2
+0
+0 פרסים
+קוד: 237
+נועה גבריאלה זוגרפוס
+כיתה ב׳2
+0
+0 פרסים
+קוד: 607
+נועה מאיר
+כיתה ב׳2
+0
+0 פרסים
+קוד: 161
+נועה קרביץ
+כיתה ב׳2
+0
+0 פרסים
+קוד: 801
+נעמי חיימוב
+כיתה ב׳2
+0
+0 פרסים
+קוד: 764
+ספיר ג׳ונסֿ
+כיתה ב׳2
+0
+0 פרסים
+קוד: 577
+עומר קלוגמן
+כיתה ב׳2
+0
+0 פרסים
+קוד: 505
+רוני מרים צישלביץ
+כיתה ב׳2
+0
+0 פרסים
+קוד: 955
+רפאל קליין
+כיתה ב׳2
+0
+0 פרסים
+קוד: 295
+כיתה ב׳3(7 ילדים)
+אביהוא יעקב ג׳ינוריה
+כיתה ב׳3
+0
+0 פרסים
+קוד: 467
+אדיר בקולטוב
+כיתה ב׳3
+0
+0 פרסים
+קוד: 541
+אליאב משה לוי
+כיתה ב׳3
+0
+0 פרסים
+קוד: 682
+דוד אלוני
+כיתה ב׳3
+0
+0 פרסים
+קוד: 644
+נועם שאואט
+כיתה ב׳3
+0
+0 פרסים
+קוד: 415
+רביד כהן
+כיתה ב׳3
+0
+0 פרסים
+קוד: 230
+רפאל כהן
+כיתה ב׳3
+0
+0 פרסים
+קוד: 119
+כיתה ב׳4(30 ילדים)
+אבישי נועם לוינסון
+כיתה ב׳4
+5
+0 פרסים
+קוד: 550
+אדל שמואלי
+כיתה ב׳4
+7
+0 פרסים
+קוד: 359
+אורה גינה אברמובסקי
+כיתה ב׳4
+2
+0 פרסים
+קוד: 207
+אורון מוסיוף
+כיתה ב׳4
+5
+0 פרסים
+קוד: 707
+איתם דוד טנא
+כיתה ב׳4
+1
+0 פרסים
+קוד: 446
+איתן מארק
+כיתה ב׳4
+7
+0 פרסים
+קוד: 101
+אליאב משה יודיץ
+כיתה ב׳4
+2
+0 פרסים
+קוד: 625
+אריאל שמר
+כיתה ב׳4
+56
+0 פרסים
+קוד: 697
+דניאל בן פורת
+כיתה ב׳4
+1
+0 פרסים
+קוד: 280
+הילה דביר
+כיתה ב׳4
+6
+0 פרסים
+קוד: 580
+הראל ליברזון
+כיתה ב׳4
+1
+0 פרסים
+קוד: 274
+טלי שיוביץ
+כיתה ב׳4
+1
+0 פרסים
+קוד: 933
+יאיר יעקב שמואלי
+כיתה ב׳4
+1
+0 פרסים
+קוד: 134
+יוסף סיאלום
+כיתה ב׳4
+2
+0 פרסים
+קוד: 362
+יותם שרעבי
+כיתה ב׳4
+1
+0 פרסים
+קוד: 854
+יעל רחל פרבר
+כיתה ב׳4
+2
+0 פרסים
+קוד: 154
+יפה ישראלי
+כיתה ב׳4
+1
+0 פרסים
+קוד: 696
+לביא שמעון
+כיתה ב׳4
+1
+0 פרסים
+קוד: 487
+ליאן חזן
+כיתה ב׳4
+1
+0 פרסים
+קוד: 657
+ליב אסתר אליזה שטיינברגר
+כיתה ב׳4
+1
+0 פרסים
+קוד: 245
+ליה כהן
+כיתה ב׳4
+1
+0 פרסים
+קוד: 579
+מיה ברנשטיין
+כיתה ב׳4
+5
+0 פרסים
+קוד: 473
+מיכאל מוכתר
+כיתה ב׳4
+4
+0 פרסים
+קוד: 459
+נויה אסרף
+כיתה ב׳4
+50
+1 פרסים
+קוד: 303
+עילאי סימון בנישו
+כיתה ב׳4
+1
+0 פרסים
+קוד: 559
+עמליה מלעי
+כיתה ב׳4
+46
+0 פרסים
+קוד: 699
+רחל מלמד
+כיתה ב׳4
+1
+0 פרסים
+קוד: 404
+רני אהרוני
+כיתה ב׳4
+5
+0 פרסים
+קוד: 885
+רפאל מרדכי מאירוב
+כיתה ב׳4
+1
+0 פרסים
+קוד: 391
+שירה זגורי
+כיתה ב׳4
+11
+0 פרסים
+קוד: 438
+כיתה ב׳5(32 ילדים)
+אביגיל אדלר
+כיתה ב׳5
+0
+0 פרסים
+קוד: 568
+אגם בן ארי
+כיתה ב׳5
+0
+0 פרסים
+קוד: 875
+אדם רביב
+כיתה ב׳5
+0
+0 פרסים
+קוד: 397
+אייר פרסר
+כיתה ב׳5
+0
+0 פרסים
+קוד: 760
+איתי ניסים אשראף
+כיתה ב׳5
+0
+0 פרסים
+קוד: 544
+איתם פלד
+כיתה ב׳5
+0
+0 פרסים
+קוד: 590
+אלון שפיץ
+כיתה ב׳5
+0
+0 פרסים
+קוד: 819
+אמה שלומוב
+כיתה ב׳5
+0
+0 פרסים
+קוד: 457
+אמיתי מקמל
+כיתה ב׳5
+0
+0 פרסים
+קוד: 440
+ארבל כהן
+כיתה ב׳5
+0
+0 פרסים
+קוד: 367
+בנימין רפאלי
+כיתה ב׳5
+0
+0 פרסים
+קוד: 312
+גפן זכריה נחמיאס
+כיתה ב׳5
+0
+0 פרסים
+קוד: 278
+הראל שבתאי
+כיתה ב׳5
+0
+0 פרסים
+קוד: 433
+יהודה שלמה פרץ
+כיתה ב׳5
+0
+0 פרסים
+קוד: 143
+יהלי אהובה יוסקוביץ
+כיתה ב׳5
+0
+0 פרסים
+קוד: 492
+יעל שני
+כיתה ב׳5
+0
+0 פרסים
+קוד: 197
+ירדן אגסי
+כיתה ב׳5
+0
+0 פרסים
+קוד: 847
+מאיה קבלן
+כיתה ב׳5
+0
+0 פרסים
+קוד: 203
+מאיה רחל דינאי
+כיתה ב׳5
+0
+0 פרסים
+קוד: 111
+מגן יהודה הלויפיינברג
+כיתה ב׳5
+0
+0 פרסים
+קוד: 882
+מיה כהן
+כיתה ב׳5
+0
+0 פרסים
+קוד: 327
+מיכאל ברוך ליטבינוב
+כיתה ב׳5
+0
+0 פרסים
+קוד: 435
+מיכאל יהודה זיו
+כיתה ב׳5
+0
+0 פרסים
+קוד: 781
+משה גורוביץ׳ אבר
+כיתה ב׳5
+0
+0 פרסים
+קוד: 430
+משוש ברוך קנובל
+כיתה ב׳5
+0
+0 פרסים
+קוד: 410
+נויה יום טוב
+כיתה ב׳5
+0
+0 פרסים
+קוד: 346
+נועה ארמה
+כיתה ב׳5
+0
+0 פרסים
+קוד: 957
+נועם גנדיל
+כיתה ב׳5
+0
+0 פרסים
+קוד: 813
+ניתאי מיאל פריזדה
+כיתה ב׳5
+0
+0 פרסים
+קוד: 248
+נעם לאה פלוקובסקי
+כיתה ב׳5
+0
+0 פרסים
+קוד: 729
+עמית מכאל חן
+כיתה ב׳5
+0
+0 פרסים
+קוד: 608
+ענבר חכם`;
+
+  function parseSeedNames(text){
+    // Extract ONLY kids full names from a messy list (class/points/prizes/codes ignored)
+    const lines = String(text || "").split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+    const out = [];
+    const seen = new Set();
+
+    function isGroupHeader(s){
+      return s.startsWith("כיתה") && s.includes("(") && s.includes("ילד");
+    }
+
+    function isNameLine(s){
+      if(!s) return false;
+      if(isGroupHeader(s)) return false;
+      if(s.startsWith("כיתה")) return false;
+      if(/^\d+$/.test(s)) return false;
+      if(s.includes("פרסים")) return false;
+      if(s.startsWith("קוד")) return false;
+
+      const heb = s.match(/[א-ת]/g);
+      if(!heb || heb.length < 2) return false;
+      const words = s.split(/\s+/).filter(w=>/[א-ת]/.test(w));
+      return words.length >= 2;
+    }
+
+    for(const s of lines){
+      if(!isNameLine(s)) continue;
+      const name = s.replace(/\s+/g, " ").trim();
+      const key = normalizeName(name);
+      if(seen.has(key)) continue;
+      seen.add(key);
+      out.push(name);
+    }
+
+    return out;
+  }
+
+  function ensureSeedKids(seedText){
+    // Make sure all seed names exist in state (idempotent, doesn't overwrite existing kids)
+    state.kids = Array.isArray(state.kids) ? state.kids : [];
+
+    const existing = new Set(state.kids.map(k=> normalizeName(k.name || "")));
+    const names = parseSeedNames(seedText);
+
+    let added = 0;
+    for(const name of names){
+      const key = normalizeName(name);
+      if(existing.has(key)) continue;
+      existing.add(key);
+      state.kids.push({ id: cryptoId(), name, note: "", points: 0, code: genUniqueCode() });
+      added++;
+    }
+
+    return added;
+  }
+
+  function makeDefaultState(){
+    return {
+      adminCodes: ["2590"],
+      kids: [],
+      prizes: [
+        { id: cryptoId(), name: "ארטיק", cost: 20 },
+        { id: cryptoId(), name: "שעת מסך", cost: 30 },
+        { id: cryptoId(), name: "צעצוע קטן", cost: 60 }
+      ]
+    };
+  }
+
+  function loadState(){
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return null;
+    try{ return JSON.parse(raw); }catch{ return null; }
+  }
+
+  function saveState(){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+
+  let state = loadState();
+
+  const screens = {
+    home: el("homeScreen"),
+    kidPortal: el("kidPortalScreen"),
+    settings: el("settingsScreen")
+  };
+
+  let currentKidId = null;
+
+  function showOnly(screenKey){
+    Object.keys(screens).forEach(k=>{
+      screens[k].classList.toggle("hidden", k !== screenKey);
+    });
+  }
+
+  function setModePill(text){ el("modePill").textContent = "מצב: " + text; }
+
+  function setStatus(targetId, msg, kind){
+    const node = el(targetId);
+    node.textContent = msg;
+    node.classList.remove("ok","bad","warn");
+    if(kind) node.classList.add(kind);
+  }
+
+  function renderKidsAdminList(){
+    const box = el("kidsAdminList");
+    box.innerHTML = "";
+    const kids = (state.kids || []).slice().sort((a,b)=> a.name.localeCompare(b.name,"he"));
+    if(kids.length === 0){
+      box.innerHTML = '<div class="status bad">אין ילדים עדיין.</div>';
+      return;
+    }
+
+    kids.forEach((k, idx)=>{
+      const div = document.createElement("div");
+      div.className = "status";
+      const n = idx + 1;
+      div.textContent = n + ") " + k.name + (k.note ? " — " + k.note : "") + (k.code ? " • קוד: " + k.code : "");
+      box.appendChild(div);
+    });
+  }
+
+  function renderKidPortal(kid){
+    el("kidNameTitle").textContent = kid.name;
+    el("kidNoteTitle").textContent = kid.note || "";
+    el("kidPoints").textContent = String(kid.points || 0);
+
+    const box = el("prizesStoreList");
+    box.innerHTML = "";
+
+    const prizes = (state.prizes||[]).slice().sort((a,b)=> (a.cost||0)-(b.cost||0));
+    if(prizes.length === 0){
+      box.innerHTML = '<div class="status bad">אין פרסים. הוסף בהגדרות.</div>';
+      return;
+    }
+
+    for(const p of prizes){
+      const canBuy = (kid.points||0) >= (p.cost||0);
+      const div = document.createElement("div");
+      div.className = "status";
+      div.innerHTML = '<strong>' + escapeHtml(p.name) + '</strong> • ' + (p.cost||0) + ' נק׳ ' + (canBuy ? '<button class="btn ok" data-buy="' + p.id + '">קנה</button>' : '<span class="badge">נעול</span>');
+      box.appendChild(div);
+      if(canBuy){
+        div.querySelector("[data-buy]").addEventListener("click", ()=> buyPrize(kid.id, p.id));
+      }
+    }
+  }
+
+  function gotoHome(){
+    currentKidId = null;
+    showOnly("home");
+    setModePill("בית");
+    setStatus("homeStatus", "סטטוס: מוכן");
+  }
+
+  function gotoSettings(){
+    showOnly("settings");
+    setModePill("הגדרות");
+    renderKidsAdminList();
+  }
+
+  function openKidPortal(kidId){
+    const kid = (state.kids||[]).find(k=>k.id===kidId);
+    if(!kid) return;
+    currentKidId = kid.id;
+    showOnly("kidPortal");
+    setModePill("פורטל ילד");
+    renderKidPortal(kid);
+  }
+
+  function findKidsByNameQuery(query){
+    // Supports partial matching:
+    // - Exact full-name match wins
+    // - Otherwise: all query tokens must match the start of SOME token in the kid's name
+    //   Example: "נבו" matches "נבו רוט". If multiple matches -> user chooses.
+    const q = normalizeName(query);
+    if(!q) return [];
+
+    const kids = (state.kids||[]);
+
+    // 1) exact
+    const exact = kids.filter(k=> normalizeName(k.name) === q);
+    if(exact.length) return exact;
+
+    const qTokens = q.split(" ").filter(Boolean);
+    const matches = [];
+
+    for(const k of kids){
+      const nameNorm = normalizeName(k.name);
+      const nameTokens = nameNorm.split(" ").filter(Boolean);
+
+      // every query token must be a prefix of at least one name token
+      const ok = qTokens.every(t => nameTokens.some(nt => nt.startsWith(t)));
+      if(ok){
+        // score: prefer startsWith(full) then earlier token matches
+        let score = 0;
+        if(nameNorm.startsWith(q)) score += 100;
+        // longer match gets higher score
+        score += Math.min(50, q.length);
+        matches.push({ kid: k, score });
+      }
+    }
+
+    matches.sort((a,b)=> b.score - a.score || a.kid.name.localeCompare(b.kid.name,"he"));
+    return matches.map(x=>x.kid);
+  }
+
+  function openPickModal(matches){
+    // Shows only the matched kids (user asked for this behavior)
+    const list = el("pickModalList");
+    list.innerHTML = "";
+
+    for(const k of matches){
+      const row = document.createElement("div");
+      row.className = "status";
+      row.style.display = "flex";
+      row.style.justifyContent = "space-between";
+      row.style.alignItems = "center";
+      row.style.gap = "10px";
+
+      const name = document.createElement("div");
+      name.innerHTML = "<strong>" + escapeHtml(k.name) + "</strong>" + (k.note ? (" <span class=\"muted\">— " + escapeHtml(k.note) + "</span>") : "");
+
+      const btn = document.createElement("button");
+      btn.className = "btn primary";
+      btn.textContent = "בחר";
+      btn.addEventListener("click", ()=>{
+        closePickModal();
+        setStatus("homeStatus", "נבחר ✅", "ok");
+        openKidPortal(k.id);
+      });
+
+      row.appendChild(name);
+      row.appendChild(btn);
+      list.appendChild(row);
+    }
+
+    el("pickModalBackdrop").classList.add("show");
+  }
+
+  function closePickModal(){
+    el("pickModalBackdrop").classList.remove("show");
+    el("pickModalList").innerHTML = "";
+  }
+
+  function enterByNameFlow(){
+    const q = el("kidNameInput").value;
+    const matches = findKidsByNameQuery(q);
+
+    if(matches.length === 0){
+      setStatus("homeStatus", "לא נמצא ילד עם השם הזה ❌", "bad");
+      return;
+    }
+
+    if(matches.length === 1){
+      setStatus("homeStatus", "נמצא ✅", "ok");
+      openKidPortal(matches[0].id);
+      return;
+    }
+
+    // multiple matches
+    setStatus("homeStatus", "מצאתי כמה תוצאות…", "warn");
+    openPickModal(matches);
+  }
+
+  function adjustPoints(delta){
+    if(!currentKidId) return;
+    const kid = (state.kids||[]).find(k=>k.id===currentKidId);
+    if(!kid) return;
+    kid.points = Math.max(0, Math.floor(Number(kid.points||0) + delta));
+    saveState();
+    renderKidPortal(kid);
+  }
+
+  function buyPrize(kidId, prizeId){
+    const kid = (state.kids||[]).find(k=>k.id===kidId);
+    const prize = (state.prizes||[]).find(p=>p.id===prizeId);
+    if(!kid || !prize) return;
+    if((kid.points||0) < (prize.cost||0)) return alert("אין מספיק נקודות");
+    kid.points -= prize.cost;
+    saveState();
+    renderKidPortal(kid);
+  }
+
+  function validateAdminCode(code){
+    const c = String(code||"").trim();
+    return (state.adminCodes||[]).indexOf(c) >= 0;
+  }
+
+  function openAdminModal(){
+    el("adminCodeInput").value = "";
+    setStatus("adminModalStatus", "סטטוס: מוכן");
+    el("adminModalBackdrop").classList.add("show");
+    setTimeout(()=> el("adminCodeInput").focus(), 0);
+  }
+
+  function closeAdminModal(){
+    el("adminModalBackdrop").classList.remove("show");
+  }
+
+  function tryAdminEnter(){
+    const code = el("adminCodeInput").value;
+    if(validateAdminCode(code)){
+      setStatus("adminModalStatus", "נכון ✅", "ok");
+      closeAdminModal();
+      gotoSettings();
+    }else{
+      setStatus("adminModalStatus", "קוד שגוי ❌", "bad");
+    }
+  }
+
+  function genUniqueCode(){
+    const used = new Set((state.kids||[]).map(k=>String(k.code||"")));
+    for(let tries=0; tries<2000; tries++){
+      const n = Math.floor(Math.random()*1000);
+      const c = String(n).padStart(3,"0");
+      if(!used.has(c)) return c;
+    }
+    return String(Math.floor(Math.random()*1000)).padStart(3,"0");
+  }
+
+  function addKid(){
+    const name = String(el("newKidName").value).trim().replace(/\s+/g, " ");
+    const note = String(el("newKidNote").value).trim();
+    if(!name) return alert("צריך שם");
+
+    const key = normalizeName(name);
+    if((state.kids||[]).some(k=> normalizeName(k.name) === key)){
+      alert("השם כבר קיים");
+      return;
+    }
+
+    state.kids = state.kids || [];
+    state.kids.push({ id: cryptoId(), name, note, points: 0, code: genUniqueCode() });
+    el("newKidName").value = "";
+    el("newKidNote").value = "";
+    saveState();
+    renderKidsAdminList();
+  }
+
+  function parseBulkKidsText(text){
+    const raw = String(text || "");
+    const replaced = raw.split(";").join(NL).split(",").join(NL);
+    const lines = replaced.split(NL).map(s=>s.trim()).filter(Boolean);
+
+    const bannedWords = ["כיתה", "קוד", "פרס", "פרסים", "ילדים", "נק", "נקודות"];
+
+    function cleanupName(line){
+      let name = String(line || "").trim();
+      const pipeIdx = name.indexOf("|");
+      const dashIdx = name.indexOf(" - ");
+      if(pipeIdx >= 0) name = name.slice(0, pipeIdx).trim();
+      else if(dashIdx >= 0) name = name.slice(0, dashIdx).trim();
+      name = name.replace(/\s+/g, " ").trim();
+      name = name.replace(/[\-–—,:;]+$/g, "").trim();
+      return name;
+    }
+
+    function isProbablyNameLine(line){
+      const s = String(line || "").trim();
+      if(!s) return false;
+      if(/^\d+$/.test(s)) return false;
+
+      const lower = s.toLowerCase();
+      for(const w of bannedWords){
+        if(lower.indexOf(w) >= 0) return false;
+      }
+
+      const heb = s.match(/[א-ת]/g);
+      if(!heb || heb.length < 2) return false;
+
+      const words = s.split(/\s+/).filter(w=>/[א-ת]/.test(w));
+      return words.length >= 2;
+    }
+
+    const names = [];
+    for(const line of lines){
+      if(!isProbablyNameLine(line)) continue;
+      const name = cleanupName(line);
+      if(name) names.push(name);
+    }
+
+    const seen = {};
+    const out = [];
+    for(const name of names){
+      const key = normalizeName(name);
+      if(seen[key]) continue;
+      seen[key] = true;
+      out.push(name);
+    }
+    return out;
+  }
+
+  function bulkAddKids(){
+    const names = parseBulkKidsText(el("bulkKidsInput").value);
+    if(names.length === 0){
+      setStatus("bulkKidsStatus", "לא נמצאו שמות ❌", "bad");
+      return;
+    }
+    const existing = {};
+    for(const k of state.kids){ existing[normalizeName(k.name)] = true; }
+
+    let added = 0;
+    for(const name of names){
+      const key = normalizeName(name);
+      if(existing[key]) continue;
+      existing[key] = true;
+      state.kids.push({ id: cryptoId(), name, note: "", points: 0, code: genUniqueCode() });
+      added++;
+    }
+
+    saveState();
+    renderKidsAdminList();
+    setStatus("bulkKidsStatus", added ? ("נוספו " + added + " ✅") : "הכל כבר קיים", added ? "ok" : "warn");
+  }
+
+  function resetData(){
+    if(!confirm("לאפס את כל הנתונים?")) return;
+    localStorage.removeItem(STORAGE_KEY);
+    location.reload();
+  }
+
+  function openPrintCards(){
+    const kids = (state.kids||[]).slice().sort((a,b)=> a.name.localeCompare(b.name,"he"));
+    const html = '<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8" />' +
+      '<title>כרטיסים</title><style>@page{size:A4;margin:10mm}body{font-family:system-ui;margin:0}'+
+      '.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8mm}'+
+      '.card{border:1px solid #111;border-radius:10px;padding:8mm;height:52mm;display:flex;flex-direction:column;justify-content:space-between}'+
+      '.name{font-size:14pt;font-weight:800}.note{font-size:10pt;color:#333}.hint{font-size:11pt;color:#111;font-weight:700}'+
+      '.printbar{display:flex;gap:8px;padding:10px 0;align-items:center}button{padding:8px 10px;border-radius:10px;border:1px solid #111;background:#fff;cursor:pointer}'+
+      '@media print{.printbar{display:none}}</style></head><body>' +
+      '<div class="printbar"><button onclick="window.print()">הדפס</button> <button onclick="window.close()">סגור</button></div>' +
+      '<div class="grid">' +
+      kids.map(k=>('<div class="card"><div><div class="name">'+escapeHtml(k.name)+'</div>' +
+        '<div class="note">'+(k.note?escapeHtml(k.note):'&nbsp;')+'</div>' +
+        '<div class="hint">קוד: '+escapeHtml(k.code||'')+'</div>' +
+        '<div class="note">כניסה: הקלידו את השם המלא במסך הבית</div></div></div>')).join('') +
+      '</div></body></html>';
+
+    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const w = window.open(url, "_blank");
+    if(!w) alert("הדפדפן חסם חלון חדש");
+    setTimeout(()=> URL.revokeObjectURL(url), 10000);
+  }
+
+  // Events
+  el("goHomeBtn").addEventListener("click", gotoHome);
+  el("backToHomeBtn").addEventListener("click", gotoHome);
+  el("closeSettingsBtn").addEventListener("click", gotoHome);
+
+  el("settingsBtn").addEventListener("click", openAdminModal);
+  el("adminCancelBtn").addEventListener("click", closeAdminModal);
+  el("adminEnterBtn").addEventListener("click", tryAdminEnter);
+  el("adminCodeInput").addEventListener("keydown", (e)=>{ if(e.key === "Enter") tryAdminEnter(); });
+
+  el("pickCancelBtn").addEventListener("click", closePickModal);
+  el("pickModalBackdrop").addEventListener("click", (e)=>{ if(e.target === el("pickModalBackdrop")) closePickModal(); });
+  document.addEventListener("keydown", (e)=>{ if(e.key === "Escape") { closeAdminModal(); closePickModal(); } });
+
+  el("enterByNameBtn").addEventListener("click", enterByNameFlow);
+  el("kidNameInput").addEventListener("keydown", (e)=>{ if(e.key === "Enter") enterByNameFlow(); });
+  el("clearKidNameBtn").addEventListener("click", ()=>{
+    el("kidNameInput").value = "";
+    setStatus("homeStatus", "סטטוס: מוכן");
+  });
+
+  el("kidAdd10Btn").addEventListener("click", ()=> adjustPoints(10));
+  el("kidSub10Btn").addEventListener("click", ()=> adjustPoints(-10));
+  el("kidAdd1Btn").addEventListener("click", ()=> adjustPoints(1));
+  el("kidSub1Btn").addEventListener("click", ()=> adjustPoints(-1));
+
+  el("kidAddCustomBtn").addEventListener("click", ()=>{
+    const n = Math.floor(Number(el("kidCustomDelta").value));
+    if(!isFinite(n) || n < 0) return alert("כמות לא תקינה");
+    adjustPoints(n);
+  });
+  el("kidSubCustomBtn").addEventListener("click", ()=>{
+    const n = Math.floor(Number(el("kidCustomDelta").value));
+    if(!isFinite(n) || n < 0) return alert("כמות לא תקינה");
+    adjustPoints(-n);
+  });
+
+  el("addKidBtn").addEventListener("click", addKid);
+  el("bulkAddKidsBtn").addEventListener("click", bulkAddKids);
+  el("bulkClearKidsBtn").addEventListener("click", ()=>{ el("bulkKidsInput").value = ""; setStatus("bulkKidsStatus", "סטטוס: מוכן"); });
+  el("resetDemoDataBtn").addEventListener("click", resetData);
+  el("printCardsBtn").addEventListener("click", openPrintCards);
+
+  // ===== Tests (פתחו עם #test בסוף הכתובת) =====
+  function assert(cond, msg){ if(!cond) throw new Error("TEST FAIL: " + msg); }
+
+  function runTests(){
+    assert(escapeHtml("<>&\"'") === '&lt;&gt;&amp;&quot;&#039;', "escapeHtml should escape correctly");
+    assert(normalizeName("  נבו   רוט ") === "נבו רוט", "normalizeName should trim/collapse");
+
+    // partial match: "נבו" should match "נבו רוט"
+    const prev = state;
+    state = { adminCodes:["2590"], kids:[{id:"1",name:"נבו רוט",note:"",points:0,code:"111"},{id:"2",name:"נבו כהן",note:"",points:0,code:"222"}], prizes:[] };
+    const m1 = findKidsByNameQuery("נבו");
+    assert(m1.length === 2, "partial query should return multiple matches when relevant");
+    const m2 = findKidsByNameQuery("נבו ר");
+    assert(m2.length === 1 && m2[0].name === "נבו רוט", "multi-token prefix should narrow to one");
+    state = prev;
+
+    // seed: extract names only
+    const demoSeed = `כיתה א׳1(2 ילדים)
+נבו רוט
+כיתה א׳1
+13
+16 פרסים
+קוד: 511
+אבישג ריינר
+כיתה א׳1
+0
+0 פרסים
+קוד: 746
+`;
+    const names = parseSeedNames(demoSeed);
+    assert(names.length === 2, "parseSeedNames should return only names");
+    assert(names[0] === "נבו רוט" && names[1] === "אבישג ריינר", "names order should match appearance");
+
+    // ensureSeedKids is idempotent
+    const tmp = { adminCodes:["2590"], kids:[], prizes:[] };
+    const prevState = state;
+    state = tmp;
+    const a1 = ensureSeedKids(demoSeed);
+    const a2 = ensureSeedKids(demoSeed);
+    assert(a1 === 2 && a2 === 0, "ensureSeedKids should not duplicate kids");
+    state = prevState;
+
+    assert(typeof SEED_TEXT === "string" && SEED_TEXT.length > 0, "SEED_TEXT should be non-empty");
+    console.log("All tests passed ✅");
+  }
+
+  function init(){
+    if(!state){
+      state = makeDefaultState();
+    }
+
+    // ensure built-in kids list exists on every load (idempotent)
+    const added = ensureSeedKids(SEED_TEXT);
+    if(added > 0) saveState();
+
+    gotoHome();
+
+    // tests
+    if(location.hash && location.hash.toLowerCase().includes("test")){
+      runTests();
+      alert("כל הטסטים עברו ✅ (ראו Console)");
+    }
+  }
+
+  init();
+</script>
+</body>
+</html>

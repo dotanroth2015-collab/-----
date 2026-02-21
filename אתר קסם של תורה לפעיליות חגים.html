@@ -191,7 +191,7 @@
             <h1 style="margin:0">פורטל ילדים — נקודות ופרסים</h1>
             <span id="modePill" class="pill">מצב: בית</span>
           </div>
-          <div class="muted">כניסה לפי <strong>שם</strong> • שמות מוצגים רק בהגדרות • הכל נשמר במכשיר</div>
+          <div class="muted">כניסה לפי <strong>שם</strong> • שמות מוצגים רק בהגדרות • סנכרון ענן (אם מוגדר)</div>
         </div>
       </div>
 
@@ -355,11 +355,37 @@
 
   <div id="printArea" class="hidden"></div>
 
-<script>
+  <!-- כניסה עם שם משתמש (חובה לפני שימוש באתר) -->
+  <div id="loginModalBackdrop" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="loginModalTitle">
+    <div class="modal">
+      <h3 id="loginModalTitle">כניסה לאתר</h3>
+      <div class="muted">הכנס שם משתמש כדי להמשיך</div>
+      <div style="margin-top:10px">
+        <input id="loginUsernameInput" placeholder="שם משתמש" autocomplete="username" />
+        <div id="loginStatus" class="status" style="margin-top:10px">סטטוס: מוכן</div>
+      </div>
+      <div class="actions">
+        <button id="loginEnterBtn" class="btn primary">כניסה</button>
+      </div>
+      <div class="muted" style="margin-top:10px">שם המשתמש הנדרש: <strong>קסם של תורה</strong></div>
+    </div>
+  </div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+
 (() => {
   "use strict";
 
-  const STORAGE_KEY = "portal_yeladim_v5";
+  const STORAGE_KEY = "portal_yeladim_v6";
+  const SESSION_LOGIN_KEY = "portal_login_ok";
+  const REQUIRED_USERNAME = "קסם של תורה";
+
+  const CLOUD_CFG_KEY = "portal_firebase_config_v1";
+  const CLOUD_DOC_KEY = "portal_cloud_doc_v1";
+  const CLOUD_DEFAULT_DOC = "kesem-shel-torah";
+  const CLIENT_ID_KEY = "portal_client_id_v1";
   const NL = String.fromCharCode(10);
   const el = (id)=>document.getElementById(id);
 
@@ -1583,11 +1609,215 @@
     try{ return JSON.parse(raw); }catch{ return null; }
   }
 
-  function saveState(){
+  function saveStateLocal(){
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   }
 
+  // ===== ענן (Firebase Firestore) =====
+  let cloud = {
+    enabled: false,
+    app: null,
+    db: null,
+    unsub: null,
+    lastWriteAt: 0,
+    clientId: null,
+    docId: null,
+  };
+
+  function getClientId(){
+    let id = localStorage.getItem(CLIENT_ID_KEY);
+    if(!id){ id = cryptoId(); localStorage.setItem(CLIENT_ID_KEY, id); }
+    return id;
+  }
+
+  function getCloudConfig(){
+    const raw = localStorage.getItem(CLOUD_CFG_KEY);
+    if(!raw) return null;
+    try{ return JSON.parse(raw); }catch{ return null; }
+  }
+
+  function setCloudConfig(obj){
+    localStorage.setItem(CLOUD_CFG_KEY, JSON.stringify(obj));
+  }
+
+  function getCloudDocId(){
+    return localStorage.getItem(CLOUD_DOC_KEY) || CLOUD_DEFAULT_DOC;
+  }
+
+  function setCloudDocId(id){
+    localStorage.setItem(CLOUD_DOC_KEY, id);
+  }
+
+  async function cloudInitIfPossible(){
+    const cfg = getCloudConfig();
+    if(!cfg) return false;
+    try{
+      cloud.app = initializeApp(cfg);
+      cloud.db = getFirestore(cloud.app);
+      cloud.enabled = true;
+      cloud.clientId = getClientId();
+      cloud.docId = getCloudDocId();
+      return true;
+    }catch(err){
+      console.warn("Cloud init failed", err);
+      cloud.enabled = false;
+      return false;
+    }
+  }
+
+  async function cloudPullOnce(){
+    if(!cloud.enabled || !cloud.db) return null;
+    try{
+      const ref = doc(cloud.db, "portals", cloud.docId);
+      const snap = await getDoc(ref);
+      if(!snap.exists()) return null;
+      const data = snap.data();
+      if(!data || !data.state) return null;
+      return data;
+    }catch(err){
+      console.warn("Cloud pull failed", err);
+      return null;
+    }
+  }
+
+  async function cloudPushNow(){
+    if(!cloud.enabled || !cloud.db) return;
+    try{
+      const ref = doc(cloud.db, "portals", cloud.docId);
+      const updatedAt = Date.now();
+      cloud.lastWriteAt = updatedAt;
+      await setDoc(ref, { state, updatedAt, clientId: cloud.clientId }, { merge: false });
+    }catch(err){
+      console.warn("Cloud push failed", err);
+    }
+  }
+
+  let cloudPushTimer = null;
+  function cloudPushDebounced(){
+    if(!cloud.enabled) return;
+    if(cloudPushTimer) clearTimeout(cloudPushTimer);
+    cloudPushTimer = setTimeout(()=> cloudPushNow(), 450);
+  }
+
+  function cloudSubscribe(onRemote){
+    if(!cloud.enabled || !cloud.db) return;
+    if(cloud.unsub) cloud.unsub();
+    const ref = doc(cloud.db, "portals", cloud.docId);
+    cloud.unsub = onSnapshot(ref, (snap)=>{
+      if(!snap.exists()) return;
+      const data = snap.data();
+      if(!data || !data.state) return;
+      const updatedAt = Number(data.updatedAt||0);
+      const fromMe = data.clientId && data.clientId === cloud.clientId;
+      if(fromMe && updatedAt && updatedAt === cloud.lastWriteAt) return;
+      onRemote(data);
+    }, (err)=> console.warn("Cloud subscribe error", err));
+  }
+
+  function saveState(){
+    saveStateLocal();
+    cloudPushDebounced();
+  }
+
   let state = loadState();
+
+  // ===== UI: ענן (הוספה דינמית למסך הגדרות) =====
+  function ensureCloudUi(){
+    const container = el("settingsScreen");
+    if(!container || el("cloudCfg")) return;
+
+    const div = document.createElement("div");
+    div.innerHTML = `
+      <div class="divider"></div>
+      <h3>סנכרון ענן (אותו מידע בכל מחשב)</h3>
+      <p class="muted">כדי לסנכרן בין מחשבים צריך Firebase + Firestore. פעם אחת מדביקים כאן את ה-Config, ואז הנתונים נשמרים בענן.</p>
+      <div id="cloudStatus" class="status" style="margin-top:10px">ענן: לא מוגדר</div>
+
+      <div class="divider"></div>
+      <label class="muted">Firebase config (JSON)</label>
+      <textarea id="cloudCfg" rows="6" placeholder='{"apiKey":"...","authDomain":"...","projectId":"..."}'></textarea>
+
+      <div class="grid2" style="margin-top:10px">
+        <div>
+          <label class="muted">מזהה פורטל (חייב להיות זהה בכל מחשב)</label>
+          <input id="cloudDocId" placeholder="kesem-shel-torah" />
+        </div>
+        <div class="row" style="align-items:flex-end">
+          <button id="saveCloudCfgBtn" class="btn ok">שמור</button>
+          <button id="connectCloudBtn" class="btn info">הפעל ענן</button>
+        </div>
+      </div>
+    `;
+
+    container.appendChild(div);
+
+    const cfg = getCloudConfig();
+    el("cloudCfg").value = cfg ? JSON.stringify(cfg, null, 2) : "";
+    el("cloudDocId").value = getCloudDocId();
+
+    const updateStatus = (txt, kind)=>{
+      const s = el("cloudStatus");
+      s.textContent = txt;
+      s.classList.remove("ok","bad","warn");
+      if(kind) s.classList.add(kind);
+    };
+
+    el("saveCloudCfgBtn").addEventListener("click", ()=>{
+      const raw = el("cloudCfg").value.trim();
+      if(!raw) return alert("הדבק JSON של config");
+      try{
+        const obj = JSON.parse(raw);
+        setCloudConfig(obj);
+        const id = String(el("cloudDocId").value||"").trim() || CLOUD_DEFAULT_DOC;
+        setCloudDocId(id);
+        updateStatus("ענן: נשמר ✅ (לחץ 'הפעל ענן')","ok");
+      }catch{
+        alert("JSON לא תקין");
+      }
+    });
+
+    el("connectCloudBtn").addEventListener("click", async ()=>{
+      const id = String(el("cloudDocId").value||"").trim() || CLOUD_DEFAULT_DOC;
+      setCloudDocId(id);
+      const ok = await cloudInitIfPossible();
+      if(!ok) return updateStatus("ענן: לא הצליח להתחבר ❌","bad");
+
+      updateStatus("ענן: פעיל ✅","ok");
+
+      const remote = await cloudPullOnce();
+      if(remote && remote.state){
+        state = remote.state;
+        ensureFixedPrizes();
+        ensureSeedKids();
+        saveStateLocal();
+      }else{
+        await cloudPushNow();
+      }
+
+      cloudSubscribe((data)=>{
+        state = data.state;
+        ensureFixedPrizes();
+        ensureSeedKids();
+        saveStateLocal();
+
+        if(currentKidId){
+          const kid = (state.kids||[]).find(k=>k.id===currentKidId);
+          if(kid) renderKidPortal(kid);
+        }
+        if(!screens.settings.classList.contains("hidden")){
+          renderKidsAdminList();
+          renderPrizesAdminList();
+        }
+      });
+
+      renderKidsAdminList();
+      renderPrizesAdminList();
+    });
+
+    // initial status
+    updateStatus(getCloudConfig() ? "ענן: מוגדר (לא פעיל)" : "ענן: לא מוגדר", getCloudConfig()?"warn":null);
+  }
+
 
   function ensureFixedPrizes(){
     state.prizes = Array.isArray(state.prizes) ? state.prizes : [];
@@ -1680,6 +1910,7 @@
     setModePill("הגדרות");
     renderKidsAdminList();
     renderPrizesAdminList();
+    ensureCloudUi();
   }
 
   function openKidPortal(kidId){
@@ -2232,14 +2463,68 @@
     el("printCardsBtn").addEventListener("click", openPrintCards);
   }
 
-  function init(){
+  function openLoginModal(){
+    el("loginUsernameInput").value = "";
+    setStatus("loginStatus","סטטוס: מוכן");
+    el("loginModalBackdrop").classList.add("show");
+    setTimeout(()=> el("loginUsernameInput").focus(), 0);
+  }
+
+  function closeLoginModal(){
+    el("loginModalBackdrop").classList.remove("show");
+  }
+
+  function tryLogin(){
+    const u = String(el("loginUsernameInput").value||"").trim();
+    if(u === REQUIRED_USERNAME){
+      sessionStorage.setItem(SESSION_LOGIN_KEY, "1");
+      setStatus("loginStatus","נכון ✅","ok");
+      closeLoginModal();
+      initApp();
+    }else{
+      setStatus("loginStatus","שם משתמש שגוי ❌","bad");
+    }
+  }
+
+  async function initApp(){
+    if(initApp._ran) return;
+    initApp._ran = true;
+
     if(!state){
       state = makeDefaultState();
     }
 
+    // אם יש ענן שמוגדר כבר — מפעילים אוטומטית
+    const cloudOk = await cloudInitIfPossible();
+    if(cloudOk){
+      const remote = await cloudPullOnce();
+      if(remote && remote.state){
+        state = remote.state;
+      }
+    }
+
     ensureFixedPrizes();
     ensureSeedKids();
-    saveState();
+    saveStateLocal();
+
+    if(cloudOk){
+      await cloudPushNow();
+      cloudSubscribe((data)=>{
+        state = data.state;
+        ensureFixedPrizes();
+        ensureSeedKids();
+        saveStateLocal();
+
+        if(currentKidId){
+          const kid = (state.kids||[]).find(k=>k.id===currentKidId);
+          if(kid) renderKidPortal(kid);
+        }
+        if(!screens.settings.classList.contains("hidden")){
+          renderKidsAdminList();
+          renderPrizesAdminList();
+        }
+      });
+    }
 
     wireEvents();
     gotoHome();
@@ -2248,6 +2533,18 @@
       runTests();
       alert("כל הטסטים עברו ✅ (ראו Console)");
     }
+  }
+
+  function init(){
+    // כניסה חובה בכל פתיחה (לא נשמר בין טאבים)
+    sessionStorage.removeItem(SESSION_LOGIN_KEY);
+
+    // אירועים של מודאל כניסה
+    el("loginEnterBtn").addEventListener("click", tryLogin);
+    el("loginUsernameInput").addEventListener("keydown", (e)=>{ if(e.key === "Enter") tryLogin(); });
+
+    // מציגים מודאל כניסה
+    openLoginModal();
   }
 
   init();

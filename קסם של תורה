@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>מערכת נקודות צבעונית</title>
+
+<style>
+body{
+  font-family: Arial;
+  background: linear-gradient(135deg,#4facfe,#00f2fe);
+  text-align:center;
+  margin:0;
+  padding:20px;
+}
+h1{color:white;}
+.container{
+  background:white;
+  padding:20px;
+  border-radius:20px;
+  max-width:600px;
+  margin:auto;
+  box-shadow:0 10px 25px rgba(0,0,0,0.2);
+}
+input,button{
+  padding:10px;
+  margin:5px;
+  border-radius:10px;
+  border:none;
+  font-size:16px;
+}
+button{
+  background:#4facfe;
+  color:white;
+  cursor:pointer;
+}
+button:hover{
+  background:#0077ff;
+}
+.child{
+  background:#f1f1f1;
+  margin:10px 0;
+  padding:10px;
+  border-radius:15px;
+}
+.points{
+  font-size:20px;
+  font-weight:bold;
+}
+</style>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+import { getFirestore, collection, addDoc, onSnapshot, updateDoc, doc, deleteDoc } 
+from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAnkW8QmE6Xsf_BQWjsZty9ELsm7ZTe9l0",
+  authDomain: "roth-bcebb.firebaseapp.com",
+  projectId: "roth-bcebb",
+  storageBucket: "roth-bcebb.firebasestorage.app",
+  messagingSenderId: "371119701451",
+  appId: "1:371119701451:web:f6166267f4f445ef444a4e"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const childrenRef = collection(db,"children");
+
+window.addChild = async function(){
+  const name = document.getElementById("name").value;
+  if(!name) return;
+  await addDoc(childrenRef,{name:name,points:0});
+  document.getElementById("name").value="";
+}
+
+window.addPoint = async function(id,current){
+  await updateDoc(doc(db,"children",id),{points:current+1});
+}
+
+window.removeChild = async function(id){
+  await deleteDoc(doc(db,"children",id));
+}
+
+onSnapshot(childrenRef,(snapshot)=>{
+  const list=document.getElementById("list");
+  list.innerHTML="";
+  snapshot.forEach(docSnap=>{
+    const data=docSnap.data();
+    list.innerHTML+=`
+      <div class="child">
+        <div>${data.name}</div>
+        <div class="points">${data.points} נקודות</div>
+        <button onclick="addPoint('${docSnap.id}',${data.points})">➕ נקודה</button>
+        <button onclick="removeChild('${docSnap.id}')">🗑 מחק</button>
+      </div>
+    `;
+  });
+});
+</script>
+
+</head>
+<body>
+
+<h1>🌈 מערכת נקודות</h1>
+
+<div class="container">
+  <input type="text" id="name" placeholder="שם הילד">
+  <button onclick="addChild()">➕ הוסף ילד</button>
+  <div id="list"></div>
+</div>
+
+</body>
+</html>

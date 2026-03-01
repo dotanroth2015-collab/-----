@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>מערכת צלצולים מתקדמת</title>
+</head>
+<body>
+<h1>🔔 פאנל ניהול צלצולים</h1>
+
+<input type="time" id="newTime">
+<button onclick="addTime()">הוסף צלצול</button>
+
+<ul id="timeList"></ul>
+
+<audio id="bellSound" src="bell.mp3"></audio>
+
+<script>
+let schedule = JSON.parse(localStorage.getItem("schedule")) || [];
+
+function saveSchedule() {
+  localStorage.setItem("schedule", JSON.stringify(schedule));
+}
+
+function renderList() {
+  const list = document.getElementById("timeList");
+  list.innerHTML = "";
+  schedule.forEach((time, index) => {
+    list.innerHTML += `<li>${time} 
+      <button onclick="removeTime(${index})">❌</button></li>`;
+  });
+}
+
+function addTime() {
+  const time = document.getElementById("newTime").value;
+  if(time){
+    schedule.push(time);
+    saveSchedule();
+    renderList();
+  }
+}
+
+function removeTime(index) {
+  schedule.splice(index,1);
+  saveSchedule();
+  renderList();
+}
+
+function checkTime() {
+  const now = new Date();
+  const currentTime = now.toTimeString().slice(0,5);
+  if(schedule.includes(currentTime)){
+    document.getElementById("bellSound").play();
+  }
+}
+
+setInterval(checkTime, 1000);
+renderList();
+</script>
+</body>
+</html>

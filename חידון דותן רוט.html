@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>חידון פסח המטורף - צבירת נקודות</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #e67e22;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --bg: #f4f7f6;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        #game-container {
+            background: white;
+            width: 90%;
+            max-width: 700px;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            text-align: center;
+            border-top: 10px solid var(--secondary);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .score-board {
+            font-size: 1.5rem;
+            color: var(--secondary);
+            font-weight: bold;
+        }
+
+        .question-box {
+            font-size: 1.6rem;
+            margin-bottom: 30px;
+            color: var(--primary);
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .option-btn {
+            padding: 15px;
+            font-size: 1.1rem;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option-btn:hover {
+            background: #f8f9fa;
+            border-color: var(--secondary);
+        }
+
+        .correct { background-color: var(--success) !important; color: white; border-color: var(--success); }
+        .wrong { background-color: var(--danger) !important; color: white; border-color: var(--danger); }
+
+        #next-btn {
+            margin-top: 30px;
+            padding: 12px 40px;
+            font-size: 1.2rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            display: none;
+        }
+
+        #next-btn:hover { opacity: 0.9; }
+
+        .progress-bar {
+            height: 10px;
+            background: #eee;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        #progress-fill {
+            height: 100%;
+            background: var(--secondary);
+            width: 0%;
+            transition: width 0.3s;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div class="header">
+        <div>שאלה <span id="q-num">1</span> מתוך <span id="total-qs">10</span></div>
+        <div class="score-board">ניקוד: <span id="score">0</span></div>
+    </div>
+    
+    <div class="progress-bar">
+        <div id="progress-fill"></div>
+    </div>
+
+    <div id="quiz-area">
+        <div class="question-box" id="question">טוען שאלה...</div>
+        <div class="options-grid" id="options"></div>
+        <button id="next-btn">לשאלה הבאה ⮕</button>
+    </div>
+</div>
+
+<script>
+    const questions = [
+        { q: "איזו מכה היא השמינית מבין עשר המכות?", a: ["חושך", "ארבה", "ברד", "דבר"], c: 1 },
+        { q: "כמה פעמים טובלים במהלך הסדר?", a: ["פעם אחת", "פעמיים", "שלוש פעמים", "אף פעם"], c: 1 },
+        { q: "מי כתב את ההגדה של פסח (לפי המסורת)?", a: ["משה רבנו", "יהושע בן נון", "אנשי כנסת הגדולה", "דוד המלך"], c: 2 },
+        { q: "מהו 'כרפס'?", a: ["סוג של דג", "ירק שטובלים במי מלח", "שיר סיום", "סוג של מצה"], c: 1 },
+        { q: "איזה נביא 'מבקר' בכל בית בליל הסדר?", a: ["ירמיהו", "אליהו", "אלישע", "שמואל"], c: 1 },
+        { q: "כמה זמן לקח לבני ישראל לצאת ממצרים?", a: ["יום אחד", "40 שנה", "7 ימים", "ברגע אחד"], c: 3 },
+        { q: "מהי 'שבת הגדול'?", a: ["השבת שאחרי פסח", "השבת שלפני פסח", "שבת בחול המועד", "שבת שבועות"], c: 1 },
+        { q: "מה הפירוש של המילה 'מגיד'?", a: ["לשיר", "לספר", "לאכול", "לשתות"], c: 1 },
+        { q: "איזה מהבאים אינו אחד מארבעת הבנים?", a: ["חכם", "רשע", "צדיק", "תם"], c: 2 },
+        { q: "באיזו שפה נכתב השיר 'חד גדיא'?", a: ["עברית", "יידיש", "ארמית", "לאדינו"], c: 2 },
+        { q: "מה מחביאים בהתחלת הסדר?", a: ["הזרוע", "הביצה", "האפיקומן", "המרור"], c: 2 }
+    ];
+
+    let currentIdx = 0;
+    let score = 0;
+
+    const qEl = document.getElementById('question');
+    const optEl = document.getElementById('options');
+    const nextBtn = document.getElementById('next-btn');
+    const scoreEl = document.getElementById('score');
+    const qNumEl = document.getElementById('q-num');
+    const progressEl = document.getElementById('progress-fill');
+    document.getElementById('total-qs').innerText = questions.length;
+
+    function init() {
+        const q = questions[currentIdx];
+        qEl.innerText = q.q;
+        optEl.innerHTML = '';
+        nextBtn.style.display = 'none';
+        qNumEl.innerText = currentIdx + 1;
+        progressEl.style.width = ((currentIdx) / questions.length * 100) + '%';
+
+        q.a.forEach((text, i) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = text;
+            btn.onclick = () => check(i, btn);
+            optEl.appendChild(btn);
+        });
+    }
+
+    function check(idx, btn) {
+        const correct = questions[currentIdx].c;
+        const allBtns = document.querySelectorAll('.option-btn');
+        allBtns.forEach(b => b.disabled = true);
+
+        if(idx === correct) {
+            btn.classList.add('correct');
+            score += 10;
+            scoreEl.innerText = score;
+        } else {
+            btn.classList.add('wrong');
+            allBtns[correct].classList.add('correct');
+        }
+        nextBtn.style.display = 'inline-block';
+    }
+
+    nextBtn.onclick = () => {
+        currentIdx++;
+        if(currentIdx < questions.length) {
+            init();
+        } else {
+            finish();
+        }
+    };
+
+    function finish() {
+        progressEl.style.width = '100%';
+        document.getElementById('quiz-area').innerHTML = `
+            <h2>כל הכבוד! סיימת את החידון 🏆</h2>
+            <p style="font-size: 2rem;">הניקוד שלך: ${score}</p>
+            <button class="option-btn" style="width:200px" onclick="location.reload()">שחק שוב</button>
+        `;
+    }
+
+    init();
+</script>
+
+</body>
+</html>

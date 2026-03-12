@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>חידון פסח בשידור חי</title>
+    <script src="https://www.gstatic.com"></script>
+    <script src="https://www.gstatic.com"></script>
+    <style>
+        :root { --red: #e21b3c; --blue: #1368ce; --green: #26890c; --yellow: #ffa602; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; text-align: center; background: #46178f; color: white; }
+        .container { padding: 20px; max-width: 800px; margin: auto; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+        .btn { border: none; border-radius: 8px; padding: 30px; font-size: 20px; font-weight: bold; color: white; cursor: pointer; transition: 0.2s; }
+        .btn:active { transform: scale(0.95); }
+        .admin-panel { background: white; color: black; padding: 20px; border-radius: 10px; margin-bottom: 20px; }
+        #question-display { font-size: 28px; margin-bottom: 30px; min-height: 80px; }
+        .timer { font-size: 40px; font-weight: bold; background: rgba(0,0,0,0.2); width: 80px; height: 80px; line-height: 80px; border-radius: 50%; margin: 10px auto; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="setup-view">
+        <h1>חידון פסח הגדול 🍷</h1>
+        <p>בחר תפקיד:</p>
+        <button class="btn" style="background:var(--blue)" onclick="startRole('admin')">אני המנחה (מקרן)</button>
+        <button class="btn" style="background:var(--green)" onclick="startRole('player')">אני שחקן (נייד)</button>
+    </div>
+
+    <!-- מסך מנחה -->
+    <div id="admin-view" style="display:none">
+        <div class="admin-panel">
+            <h2 id="admin-q-text">לחץ להתחלת השאלה הראשונה</h2>
+            <button onclick="nextQuestion()" style="padding:10px 20px; cursor:pointer;">שאלה הבאה >> </button>
+        </div>
+        <div id="stats">מחכים לשחקנים...</div>
+    </div>
+
+    <!-- מסך שחקן -->
+    <div id="player-view" style="display:none">
+        <div id="question-info">
+            <div class="timer" id="timer">!</div>
+            <h2 id="q-title">המתן לשאלה...</h2>
+        </div>
+        <div class="grid">
+            <button onclick="sendAnswer(0)" class="btn" style="background:var(--red)">▲</button>
+            <button onclick="sendAnswer(1)" class="btn" style="background:var(--blue)">⬞</button>
+            <button onclick="sendAnswer(2)" class="btn" style="background:var(--yellow)">●</button>
+            <button onclick="sendAnswer(3)" class="btn" style="background:var(--green)">■</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// --- נתוני השאלות (30 שאלות קשות) ---
+const questions = [
+    {q: "מי היה השליח הראשון שהציע למשה לחזור למצרים?", options: ["אהרן", "מרים", "הקב\"ה", "יתרו"], correct: 2},
+    {q: "איזה שבט לא עבד בפרך במצרים?", options: ["יהודה", "לוי", "בנימין", "ראובן"], correct: 1},
+    {q: "מה הפירוש המילולי של 'אפיקומן' מיוונית?", options: ["מצה גנובה", "קינוח", "סעודה", "יציאה"], correct: 1},
+    {q: "מי אמר 'אצבע אלוהים היא' ובאיזו מכה?", options: ["פרעה בדם", "החרטומים בכינים", "משה בערוב", "אהרן בצפרדע"], correct: 1},
+    {q: "כמה שנים ארכה גלות מצרים בפועל?", options: ["400", "430", "210", "150"], correct: 2},
+    // ... הוסף כאן את שאר השאלות שנתתי לך קודם
+];
+
+// --- הגדרות חיבור (חייב להחליף בפרטים שלך מ-Firebase) ---
+const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    databaseURL: "YOUR_DB_URL",
+    projectId: "YOUR_PROJECT_ID",
+};
+// הערה: כדי שזה יעבוד בלי שרת, תצטרך להדביק כאן את הגדרות הפרויקט שלך מ-Firebase
+// אם אתה רק רוצה לראות איך זה נראה - הקוד למטה מעדכן את ה-UI.
+
+let database;
+let currentIdx = -1;
+
+function startRole(role) {
+    document.getElementById('setup-view').style.display = 'none';
+    if (role === 'admin') {
+        document.getElementById('admin-view').style.display = 'block';
+    } else {
+        document.getElementById('player-view').style.display = 'block';
+    }
+}
+
+function nextQuestion() {
+    currentIdx++;
+    if(currentIdx < questions.length) {
+        const q = questions[currentIdx];
+        document.getElementById('admin-q-text').innerText = q.q;
+        // כאן שולחים לפיירבייס את ה-index: database.ref('game').set({current: currentIdx});
+        alert("שאלה " + (currentIdx+1) + " נשלחה למכשירים!");
+    }
+}
+
+function sendAnswer(num) {
+    alert("שלחת תשובה " + (num+1) + "! המתן לתוצאות.");
+}
+
+</script>
+</body>
+</html>

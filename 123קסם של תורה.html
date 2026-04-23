@@ -1,25 +1,64 @@
-<style>
-  .torah-button {
-    display: inline-block;
-    padding: 15px 30px;
-    background-color: #2c3e50; /* צבע כחול כהה אלגנטי */
-    color: white !important;
-    text-decoration: none;
-    border-radius: 50px; /* פינות מעוגלות */
-    font-family: Arial, sans-serif;
-    font-weight: bold;
-    font-size: 18px;
-    transition: background-color 0.3s ease;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    direction: rtl;
-  }
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>קסם של תורה</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f7f6; /* רקע בהיר ונעים */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
 
-  .torah-button:hover {
-    background-color: #34495e; /* צבע מעט בהיר יותר במעבר עכבר */
-    box-shadow: 0 6px 8px rgba(0,0,0,0.15);
-  }
-</style>
+        .container {
+            text-align: center;
+        }
 
-<a href="https://base44.app" class="torah-button" target="_blank">
-  למעבר לאתר קסם של תורה לחצו פה
-</a>
+        h1 {
+            color: #2c3e50;
+            font-size: 48px; /* כותרת גדולה מאוד */
+            margin-bottom: 30px;
+        }
+
+        .magic-button {
+            display: inline-block;
+            padding: 25px 60px; /* כפתור גדול במיוחד */
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white !important;
+            text-decoration: none;
+            font-size: 28px; /* טקסט גדול */
+            font-weight: bold;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid #2c3e50;
+        }
+
+        .magic-button:hover {
+            transform: translateY(-5px); /* אפקט קפיצה קטן */
+            box-shadow: 0 15px 25px rgba(0,0,0,0.3);
+            background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+        }
+
+        .magic-button:active {
+            transform: translateY(2px);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>ברוכים הבאים לקסם של תורה</h1>
+        
+        <a href="https://base44.app" class="magic-button" target="_blank">
+            למעבר לאתר לחצו פה
+        </a>
+    </div>
+
+</body>
+</html>

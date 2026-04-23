@@ -2,61 +2,67 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>קסם של תורה</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מעבר לאתר קסם של תורה</title>
     <style>
-        body {
+        /* מרכז את כל התוכן לאמצע המסך */
+        body, html {
+            height: 100%;
+            margin: 0;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f4f7f6; /* רקע בהיר ונעים */
+            background-color: #f9f9f9; /* צבע רקע נקי */
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        .container {
+        .wrapper {
             text-align: center;
+            padding: 20px;
         }
 
         h1 {
-            color: #2c3e50;
-            font-size: 48px; /* כותרת גדולה מאוד */
-            margin-bottom: 30px;
+            font-size: 3.5rem; /* כותרת ענקית */
+            color: #1a2a3a;
+            margin-bottom: 40px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
         }
 
-        .magic-button {
+        .btn-magic {
             display: inline-block;
-            padding: 25px 60px; /* כפתור גדול במיוחד */
-            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-            color: white !important;
             text-decoration: none;
-            font-size: 28px; /* טקסט גדול */
+            color: #ffffff !important;
+            background: linear-gradient(145deg, #2c3e50, #34495e); /* צבע כחול כהה מלכותי */
+            padding: 30px 60px; /* כפתור גדול מאוד */
+            font-size: 2.5rem; /* טקסט בתוך הכפתור גדול מאוד */
             font-weight: bold;
-            border-radius: 15px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
             transition: all 0.3s ease;
-            cursor: pointer;
-            border: 2px solid #2c3e50;
+            border: 2px solid #1a2a3a;
         }
 
-        .magic-button:hover {
-            transform: translateY(-5px); /* אפקט קפיצה קטן */
-            box-shadow: 0 15px 25px rgba(0,0,0,0.3);
-            background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+        /* אפקט כשמעבירים עכבר */
+        .btn-magic:hover {
+            transform: scale(1.1); /* מגדיל את הכפתור עוד יותר כשנוגעים בו */
+            box-shadow: 0 20px 45px rgba(0,0,0,0.3);
+            background: linear-gradient(145deg, #34495e, #2c3e50);
         }
 
-        .magic-button:active {
-            transform: translateY(2px);
+        /* מותאם לנייד */
+        @media (max-width: 600px) {
+            h1 { font-size: 2.5rem; }
+            .btn-magic { font-size: 1.8rem; padding: 20px 40px; }
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>ברוכים הבאים לקסם של תורה</h1>
+    <div class="wrapper">
+        <h1>קסם של תורה</h1>
         
-        <a href="https://base44.app" class="magic-button" target="_blank">
-            למעבר לאתר לחצו פה
+        <a href="https://app-f2e6b9bf.base44.app/login?from_url=https%3A%2F%2Fapp-f2e6b9bf.base44.app%2F" class="btn-magic">
+            לחצו פה למעבר לאתר
         </a>
     </div>
 

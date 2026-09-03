@@ -19,18 +19,10 @@
 const { useState, useEffect } = React;
 
 // נתוני הפרויקט הרשמיים שלך
-const SUPABASE_URL = "https://sjqdhjypibusjucrgwck.supabase.co";
+const SUPABASE_URL = "https://supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNqcWRoanlwaWJ1c2p1Y3Jnd2NrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg0NTE5ODQsImV4cCI6MjEwNDAyNzk4NH0.LxMNijruSLAL_QU8diYB7Wk6tO-7_w6zpoippM03bro";
 
-// יצירת החיבור עם הגדרות עוקפות חסימה גלובליות
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: { persistSession: false },
-  global: {
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-    }
-  }
-});
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 function makeIcon(symbol) {
   return function IconComp({ size = 16, className }) {
@@ -118,8 +110,8 @@ function ScheduleTab({ roster, weekDays, weekStart, setWeekStart, shiftFor, save
       {editingCell && (
         <div style={{ background: COLORS.surface, border: `1px solid ${COLORS.line}`, borderRadius: '8px' }} className="mt-4 p-4 max-w-sm">
           <div className="flex items-center justify-between mb-3">
-            <h3 class="text-sm font-semibold">משמרת: {editingCell.employeeName} · {DAY_NAMES[editingCell.dayIndex]}</h3>
-            <button onClick={() => setEditingCell(null)} class="cursor-pointer"><X size={16} /></button>
+            <h3 className="text-sm font-semibold">משמרת: {editingCell.employeeName} · {DAY_NAMES[editingCell.dayIndex]}</h3>
+            <button onClick={() => setEditingCell(null)} className="cursor-pointer"><X size={16} /></button>
           </div>
           <div className="flex gap-2 mb-2">
             <div className="flex-1">
@@ -196,4 +188,4 @@ function App() {
 
   return (
     <div style={{ backgroundColor: COLORS.bg, minHeight: '100vh' }} className="p-4 md:p-8 font-['Assistant']">
-
+      <div style={{ backgroundColor: COLORS.surface, maxWidth: '1200px', borderRadius: '16px', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.05)' }} className="mx-auto p-6">

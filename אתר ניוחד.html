@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>לוח הצוות שלי</title>
-    <!-- טעינת Tailwind CSS בדיוק כמו שקלאוד אוהב -->
+    <!-- טעינת Tailwind CSS העדכנית ביותר -->
     <script src="https://jsdelivr.net"></script>
     <!-- טעינת React ו-ReactDOM ישירות לדפדפן -->
     <script src="https://unpkg.com" crossorigin></script>
@@ -16,7 +16,7 @@
         body { font-family: 'Rubik', sans-serif; }
     </style>
 </head>
-<body class="bg-[#EEF0EB] text-[#1C2624] min-height-screen p-4">
+<body class="bg-[#EEF0EB] text-[#1C2624] min-h-screen p-4">
 
     <div id="root"></div>
 
@@ -146,7 +146,7 @@
           const weekDays = [...Array(7)].map((_, i) => addDays(weekStart, i));
           const [editingCell, setEditingCell] = React.useState(null);
 
-          // עובדים לדוגמה כדי שהלוח לא יהיה ריק ומבאס
+          // נתוני דוגמה ראשוניים כדי שהאתר יפעל ישר
           const demoRoster = [{ id: '1', name: 'ישראל ישראלי' }, { id: '2', name: 'נועה כהן' }];
           const demoShifts = {
             'ישראל ישראלי-0': { start: '08:00', end: '16:00', note: 'מהמשרד' },
@@ -180,8 +180,11 @@
         }
 
         const { useState } = React;
-        const root = tragedies = ReactDOM.createRoot(document.getElementById('root'));
+        const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
+</body>
+</html>
+
 </body>
 </html>

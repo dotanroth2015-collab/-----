@@ -9,6 +9,8 @@
 <script src="https://unpkg.com"></script>
 <script src="https://unpkg.com"></script>
 <script src="https://unpkg.com"></script>
+<!-- הספרייה הרשמית של Supabase -->
+<script src="https://unpkg.com"></script>
 <style>body{margin:0}</style>
 </head>
 <body>
@@ -16,49 +18,19 @@
 <script type="text/babel">
 const { useState, useEffect } = React;
 
-// נתוני החיבור ל-Supabase שלך בענן
-const SUPABASE_URL = "https://supabase.co";
+// נתוני הפרויקט הרשמיים שלך
+const SUPABASE_URL = "https://sjqdhjypibusjucrgwck.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNqcWRoanlwaWJ1c2p1Y3Jnd2NrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg0NTE5ODQsImV4cCI6MjEwNDAyNzk4NH0.LxMNijruSLAL_QU8diYB7Wk6tO-7_w6zpoippM03bro";
 
-/* פונקציות עוקפות חסימת דפדפנים (CORS Bypass Fetch) */
-async function getShiftsFromCloud() {
-  try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/shifts?select=*`, {
-      headers: { "apikey": SUPABASE_ANON_KEY, "Authorization": `Bearer ${SUPABASE_ANON_KEY}` }
-    });
-    return await res.json();
-  } catch (e) { console.error(e); return []; }
-}
-
-async function saveShiftToCloud(employeeName, dayIndex, start, end, note) {
-  try {
-    await fetch(`${SUPABASE_URL}/rest/v1/shifts`, {
-      method: "POST",
-      headers: { 
-        "apikey": SUPABASE_ANON_KEY, 
-        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
-        "Content-Type": "application/json",
-        "Prefer": "resolution=merge-duplicates"
-      },
-      body: JSON.stringify({
-        employee_name: employeeName,
-        day_index: dayIndex,
-        start_time: start,
-        end_time: end,
-        note: note
-      })
-    });
-  } catch (e) { console.error(e); }
-}
-
-async function deleteShiftFromCloud(employeeName, dayIndex) {
-  try {
-    await fetch(`${SUPABASE_URL}/rest/v1/shifts?employee_name=eq.${encodeURIComponent(employeeName)}&day_index=eq.${dayIndex}`, {
-      method: "DELETE",
-      headers: { "apikey": SUPABASE_ANON_KEY, "Authorization": `Bearer ${SUPABASE_ANON_KEY}` }
-    });
-  } catch (e) { console.error(e); }
-}
+// יצירת החיבור עם הגדרות עוקפות חסימה גלובליות
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: { persistSession: false },
+  global: {
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+    }
+  }
+});
 
 function makeIcon(symbol) {
   return function IconComp({ size = 16, className }) {
@@ -66,7 +38,6 @@ function makeIcon(symbol) {
   };
 }
 const Calendar = makeIcon('📅');
-const Users = makeIcon('👥');
 const ChevronRight = makeIcon('›');
 const ChevronLeft = makeIcon('‹');
 const X = makeIcon('✕');
@@ -87,15 +58,18 @@ function getWeekStart(date) {
 }
 function addDays(date, n) { const d = new Date(date); d.setDate(d.getDate() + n); return d; }
 
-function ScheduleTab({ roster, weekDays, weekStart, setWeekStart, shiftFor, saveShift, isManager, editingCell, setEditingCell }) {
+function ScheduleTab({ roster, weekDays, weekStart, setWeekStart, shiftFor, saveShift, editingCell, setEditingCell }) {
   const [form, setForm] = useState({ start: '09:00', end: '17:00', note: '' });
+  
   useEffect(() => {
     if (editingCell) {
       const existing = shiftFor(editingCell.employeeName, editingCell.dayIndex);
       setForm(existing ? { start: existing.start, end: existing.end, note: existing.note || '' } : { start: '09:00', end: '17:00', note: '' });
     }
   }, [editingCell]);
+  
   const rangeLabel = `${weekDays[0].toLocaleDateString('he-IL', { day: 'numeric', month: 'short' })} – ${weekDays[6].toLocaleDateString('he-IL', { day: 'numeric', month: 'short' })}`;
+  
   return (
     <div>
       <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
@@ -182,16 +156,44 @@ function App() {
   useEffect(() => {
     async function loadShifts() {
       setLoading(true);
-      const data = await getShiftsFromCloud();
-      if (Array.isArray(data)) {
-        const shiftsMap = {};
-        data.forEach(s => {
-          shiftsMap[`${s.employee_name}-${s.day_index}`] = { start: s.start_time, end: s.end_time, note: s.note };
-        });
-        setShifts(shiftsMap);
-      }
+      try {
+        const { data, error } = await supabaseClient.from('shifts').select('*');
+        if (!error && data) {
+          const shiftsMap = {};
+          data.forEach(s => {
+            shiftsMap[`${s.employee_name}-${s.day_index}`] = { start: s.start_time, end: s.end_time, note: s.note };
+          });
+          setShifts(shiftsMap);
+        }
+      } catch (e) { console.error(e); }
       setLoading(false);
     }
     loadShifts();
   }, [weekStart]);
+
+  async function saveShift(shiftData) {
+    if (!editingCell) return;
+    const { employeeName, dayIndex } = editingCell;
+    const key = `${employeeName}-${dayIndex}`;
+
+    if (!shiftData) {
+      const newShifts = { ...shifts };
+      delete newShifts[key];
+      setShifts(newShifts);
+      await supabaseClient.from('shifts').delete().match({ employee_name: employeeName, day_index: dayIndex });
+    } else {
+      setShifts(prev => ({ ...prev, [key]: shiftData }));
+      await supabaseClient.from('shifts').upsert({
+        employee_name: employeeName,
+        day_index: dayIndex,
+        start_time: shiftData.start,
+        end_time: shiftData.end,
+        note: shiftData.note
+      }, { onConflict: 'employee_name,day_index' });
+    }
+    setEditingCell(null);
+  }
+
+  return (
+    <div style={{ backgroundColor: COLORS.bg, minHeight: '100vh' }} className="p-4 md:p-8 font-['Assistant']">
 

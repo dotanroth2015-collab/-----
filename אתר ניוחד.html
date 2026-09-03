@@ -9,21 +9,22 @@
 <script src="https://unpkg.com"></script>
 <script src="https://unpkg.com"></script>
 <script src="https://unpkg.com"></script>
-<!-- הספרייה הרשמית של Supabase -->
+<!-- הספרייה הרשמית והיציבה של Supabase -->
 <script src="https://unpkg.com"></script>
 <style>body{margin:0}</style>
 </head>
 <body>
 <div id="root"></div>
 <script type="text/babel">
-const { useState, useEffect } = React;
+const { useState, useEffect, useRef, useCallback } = React;
 
-// נתוני הפרויקט הרשמיים שלך
+/* ---- נתוני החיבור הרשמיים שלך ל-Supabase ---- */
 const SUPABASE_URL = "https://supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNqcWRoanlwaWJ1c2p1Y3Jnd2NrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg0NTE5ODQsImV4cCI6MjEwNDAyNzk4NH0.LxMNijruSLAL_QU8diYB7Wk6tO-7_w6zpoippM03bro";
 
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+/* ---- הגדרת אייקונים פשוטים מבוססי אימוג'י ---- */
 function makeIcon(symbol) {
   return function IconComp({ size = 16, className }) {
     return <span className={className} style={{ fontSize: size, lineHeight: 1, display: 'inline-block' }}>{symbol}</span>;
@@ -50,6 +51,7 @@ function getWeekStart(date) {
 }
 function addDays(date, n) { const d = new Date(date); d.setDate(d.getDate() + n); return d; }
 
+/* ---------------- רכיב טבלת המשמרות ---------------- */
 function ScheduleTab({ roster, weekDays, weekStart, setWeekStart, shiftFor, saveShift, editingCell, setEditingCell }) {
   const [form, setForm] = useState({ start: '09:00', end: '17:00', note: '' });
   
@@ -66,9 +68,9 @@ function ScheduleTab({ roster, weekDays, weekStart, setWeekStart, shiftFor, save
     <div>
       <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
         <div className="flex items-center gap-2">
-          <button onClick={() => setWeekStart(addDays(weekStart, -7))} style={{ border: `1px solid ${COLORS.line}`, borderRadius: '6px' }} className="p-1.5 cursor-pointer bg-white"><ChevronRight size={16} /></button>
+          <button onClick={() => setWeekStart(addDays(weekStart, -7))} style={{ border: `1px solid ${COLORS.line}`, borderRadius: '6px' }} className="p-1.5 cursor-pointer bg-white hover:bg-gray-50"><ChevronRight size={16} /></button>
           <span style={{ color: COLORS.inkSoft }} className="text-sm font-medium min-w-[120px] text-center inline-block">{rangeLabel}</span>
-          <button onClick={() => setWeekStart(addDays(weekStart, 7))} style={{ border: `1px solid ${COLORS.line}`, borderRadius: '6px' }} className="p-1.5 cursor-pointer bg-white"><ChevronLeft size={16} /></button>
+          <button onClick={() => setWeekStart(addDays(weekStart, 7))} style={{ border: `1px solid ${COLORS.line}`, borderRadius: '6px' }} className="p-1.5 cursor-pointer bg-white hover:bg-gray-50"><ChevronLeft size={16} /></button>
         </div>
       </div>
       <div className="overflow-x-auto" style={{ border: `1px solid ${COLORS.line}`, borderRadius: '8px' }}>
@@ -92,11 +94,11 @@ function ScheduleTab({ roster, weekDays, weekStart, setWeekStart, shiftFor, save
                   const shift = shiftFor(emp.name, di);
                   return (
                     <td key={di} onClick={() => setEditingCell({ employeeName: emp.name, dayIndex: di })}
-                      style={{ borderBottom: `1px solid ${COLORS.line}` }} className="p-1.5 text-center align-top cursor-pointer">
+                      style={{ borderBottom: `1px solid ${COLORS.line}` }} className="p-1.5 text-center align-top cursor-pointer hover:bg-gray-100">
                       {shift ? (
-                        <div style={{ background: COLORS.accentSoft, borderRight: `3px solid ${COLORS.primary}`, borderRadius: '4px' }} className="px-2 py-1 text-xs text-right">
+                        <div style={{ background: COLORS.accentSoft, borderRight: `3px solid ${COLORS.primary}`, borderRadius: '4px' }} className="px-2 py-1 text-xs text-right w-full block">
                           <div className="font-medium">{shift.start}–{shift.end}</div>
-                          {shift.note && <div style={{ color: COLORS.inkSoft }}>{shift.note}</div>}
+                          {shift.note && <div style={{ color: COLORS.inkSoft }} className="truncate">{shift.note}</div>}
                         </div>
                       ) : <span style={{ color: COLORS.line }} className="text-xs">+</span >}
                     </td>
@@ -108,10 +110,10 @@ function ScheduleTab({ roster, weekDays, weekStart, setWeekStart, shiftFor, save
         </table>
       </div>
       {editingCell && (
-        <div style={{ background: COLORS.surface, border: `1px solid ${COLORS.line}`, borderRadius: '8px' }} className="mt-4 p-4 max-w-sm">
+        <div style={{ background: COLORS.surface, border: `1px solid ${COLORS.line}`, borderRadius: '8px' }} className="mt-4 p-4 max-w-sm shadow-sm">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold">משמרת: {editingCell.employeeName} · {DAY_NAMES[editingCell.dayIndex]}</h3>
-            <button onClick={() => setEditingCell(null)} className="cursor-pointer"><X size={16} /></button>
+            <h3 className="text-sm font-semibold text-[#1C2624]">משמרת: {editingCell.employeeName} · {DAY_NAMES[editingCell.dayIndex]}</h3>
+            <button onClick={() => setEditingCell(null)} className="cursor-pointer text-gray-400 hover:text-gray-600"><X size={14} /></button>
           </div>
           <div className="flex gap-2 mb-2">
             <div className="flex-1">
@@ -128,8 +130,8 @@ function ScheduleTab({ roster, weekDays, weekStart, setWeekStart, shiftFor, save
             <input type="text" placeholder="למשל: מהבית" value={form.note} onChange={e => setForm({ ...form, note: e.target.value })} style={{ border: `1px solid ${COLORS.line}`, borderRadius: '6px' }} className="w-full px-2 py-1.5 text-sm" />
           </div>
           <div className="flex gap-2 justify-end">
-            <button onClick={() => saveShift(null)} style={{ color: COLORS.danger }} className="text-xs px-2 py-1.5 font-medium cursor-pointer">מחק משמרת</button>
-            <button onClick={() => saveShift({ start: form.start, end: form.end, note: form.note })} style={{ background: COLORS.primary, color: COLORS.surface, borderRadius: '6px' }} className="text-xs px-3 py-1.5 font-medium cursor-pointer">שמור</button>
+            <button onClick={() => saveShift(null)} style={{ color: COLORS.danger }} className="text-xs px-2 py-1.5 font-medium cursor-pointer hover:underline">מחק משמרת</button>
+            <button onClick={() => saveShift({ start: form.start, end: form.end, note: form.note })} style={{ background: COLORS.primary, color: COLORS.surface, borderRadius: '6px' }} className="text-xs px-3 py-1.5 font-medium cursor-pointer hover:bg-opacity-90">שמור</button>
           </div>
         </div>
       )}
@@ -137,14 +139,20 @@ function ScheduleTab({ roster, weekDays, weekStart, setWeekStart, shiftFor, save
   );
 }
 
+/* ---------------- האפליקציה הראשית ---------------- */
 function App() {
   const [weekStart, setWeekStart] = useState(getWeekStart(new Date()));
   const weekDays = [...Array(7)].map((_, i) => addDays(weekStart, i));
-  const [roster] = useState([{ id: '1', name: 'ישראל ישראלי' }, { id: '2', name: 'נועה כהן' }]);
+  const [roster] = useState([
+    { id: '1', name: 'ישראל ישראלי' }, 
+    { id: '2', name: 'נועה כהן' },
+    { id: '3', name: 'דותן רוט' }
+  ]);
   const [shifts, setShifts] = useState({});
   const [editingCell, setEditingCell] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // טעינת הנתונים מהענן
   useEffect(() => {
     async function loadShifts() {
       setLoading(true);
@@ -163,6 +171,7 @@ function App() {
     loadShifts();
   }, [weekStart]);
 
+  // שמירה ועדכון בענן
   async function saveShift(shiftData) {
     if (!editingCell) return;
     const { employeeName, dayIndex } = editingCell;
@@ -177,15 +186,3 @@ function App() {
       setShifts(prev => ({ ...prev, [key]: shiftData }));
       await supabaseClient.from('shifts').upsert({
         employee_name: employeeName,
-        day_index: dayIndex,
-        start_time: shiftData.start,
-        end_time: shiftData.end,
-        note: shiftData.note
-      }, { onConflict: 'employee_name,day_index' });
-    }
-    setEditingCell(null);
-  }
-
-  return (
-    <div style={{ backgroundColor: COLORS.bg, minHeight: '100vh' }} className="p-4 md:p-8 font-['Assistant']">
-      <div style={{ backgroundColor: COLORS.surface, maxWidth: '1200px', borderRadius: '16px', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.05)' }} className="mx-auto p-6">

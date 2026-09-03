@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>לוח הצוות שלי</title>
+    <!-- טעינת Tailwind CSS בדיוק כמו שקלאוד אוהב -->
+    <script src="https://jsdelivr.net"></script>
+    <!-- טעינת React ו-ReactDOM ישירות לדפדפן -->
+    <script src="https://unpkg.com" crossorigin></script>
+    <script src="https://unpkg.com" crossorigin></script>
+    <!-- טעינת Babel כדי שהדפדפן יבין את קוד ה-React -->
+    <script src="https://unpkg.com"></script>
+    <style>
+        @import url('https://googleapis.com');
+        body { font-family: 'Rubik', sans-serif; }
+    </style>
+</head>
+<body class="bg-[#EEF0EB] text-[#1C2624] min-height-screen p-4">
+
+    <div id="root"></div>
+
+    <script type="text/babel">
+        // הגדרת האייקונים של Lucide בצורה פשוטה ישירות מהרשת
+        const Lucide = {
+          Calendar: () => <span>📅</span>,
+          MessageCircle: () => <span>💬</span>,
+          Video: () => <span>📹</span>,
+          X: ({ size }) => <span style={{fontSize: size}}>❌</span>,
+          Users: () => <span>👥</span>,
+          Clock: () => <span>🕒</span>,
+          ChevronRight: () => <span>▶</span>,
+          ChevronLeft: () => <span>◀</span>,
+          Plus: () => <span>➕</span>
+        };
+
+        const COLORS = {
+          bg: '#EEF0EB',
+          surface: '#FFFFFF',
+          ink: '#1C2624',
+          inkSoft: '#5B6863',
+          primary: '#1F6F5C',
+          primaryDark: '#14503F',
+          accent: '#E0A83E',
+          accentSoft: '#F5E6C8',
+          line: '#D9DED7',
+          danger: '#C1443B',
+        };
+
+        const MANAGER_CODE = '2590';
+        const DAY_NAMES = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
+
+        function getWeekStart(date) {
+          const d = new Date(date);
+          const day = d.getDay();
+          d.setDate(d.getDate() - day);
+          d.setHours(0, 0, 0, 0);
+          return d;
+        }
+        function addDays(date, n) { const d = new Date(date); d.setDate(d.getDate() + n); return d; }
+
+        function EmptyState({ icon: Icon, text }) {
+          return (
+            <div style={{ border: `1px dashed ${COLORS.line}`, borderRadius: '8px', color: COLORS.inkSoft }} className="p-8 text-center text-sm">
+              <Icon size={22} className="mx-auto mb-2" />
+              {text}
+            </div>
+          );
+        }
+
+        function ScheduleTab({ roster, weekDays, weekStart, setWeekStart, shiftFor, saveShift, isManager, editingCell, setEditingCell }) {
+          const [form, setForm] = useState({ start: '09:00', end: '17:00', note: '' });
+          
+          React.useEffect(() => {
+            if (editingCell) {
+              const existing = shiftFor(editingCell.employeeName, editingCell.dayIndex);
+              setForm(existing ? { start: existing.start, end: existing.end, note: existing.note || '' } : { start: '09:00', end: '17:00', note: '' });
+            }
+          }, [editingCell]);
+          
+          const rangeLabel = `${weekDays[0].toLocaleDateString('he-IL', { day: 'numeric', month: 'short' })} – ${weekDays[6].toLocaleDateString('he-IL', { day: 'numeric', month: 'short' })}`;
+          function openCell(employeeName, dayIndex) { if (isManager) setEditingCell({ employeeName, dayIndex }); }
+          
+          return (
+            <div>
+              <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+                <div className="flex items-center gap-2">
+                  <button onClick={() => setWeekStart(addDays(weekStart, -7))} style={{ border: `1px solid ${COLORS.line}`, borderRadius: '6px' }} className="p-1.5 bg-white cursor-pointer"><Lucide.ChevronRight /></button>
+                  <span style={{ color: COLORS.inkSoft }} className="text-sm font-medium min-w-[120px] text-center inline-block">{rangeLabel}</span>
+                  <button onClick={() => setWeekStart(addDays(weekStart, 7))} style={{ border: `1px solid ${COLORS.line}`, borderRadius: '6px' }} className="p-1.5 bg-white cursor-pointer"><Lucide.ChevronLeft /></button>
+                </div>
+                {!isManager && <span style={{ color: COLORS.inkSoft }} className="text-xs">רק מנהל/ת יכולים לערוך משמרות</span>}
+              </div>
+              {roster.length === 0 ? (
+                <EmptyState icon={Lucide.Users} text={isManager ? 'עוד לא הוספת עובדים. עברו לטאב "ניהול צוות".' : 'אין עדיין עובדים בלוח'} />
+              ) : (
+                <div className="overflow-x-auto" style={{ border: `1px solid ${COLORS.line}`, borderRadius: '8px' }}>
+                  <table className="w-full text-sm" style={{ borderCollapse: 'collapse', minWidth: '700px' }}>
+                    <thead>
+                      <tr style={{ background: COLORS.surface }}>
+                        <th style={{ borderBottom: `1px solid ${COLORS.line}`, color: COLORS.inkSoft }} className="text-right p-2.5 font-medium">עובד/ת</th>
+                        {weekDays.map((d, i) => (
+                          <th key={i} style={{ borderBottom: `1px solid ${COLORS.line}`, color: COLORS.inkSoft }} className="p-2.5 font-medium text-center">
+                            <div>{DAY_NAMES[i]}</div>
+                            <div style={{ fontWeight: 400, fontSize: '11px' }}>{d.toLocaleDateString('he-IL', { day: 'numeric', month: 'numeric' })}</div>
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {roster.map((emp, ri) => (
+                        <tr key={emp.id} style={{ background: ri % 2 === 0 ? COLORS.surface : '#F8F9F6' }}>
+                          <td style={{ borderBottom: `1px solid ${COLORS.line}` }} className="p-2.5 font-medium">
+                            <div className="flex items-center gap-1.5">
+                              <span style={{ width: 6, height: 6, borderRadius: 999, background: COLORS.primary }}></span>
+                              {emp.name}
+                            </div>
+                          </td>
+                          {weekDays.map((d, di) => {
+                            const shift = shiftFor(emp.name, di);
+                            return (
+                              <td key={di} onClick={() => openCell(emp.name, di)}
+                                style={{ borderBottom: `1px solid ${COLORS.line}`, cursor: isManager ? 'pointer' : 'default' }}
+                                className="p-1.5 text-center align-top">
+                                {shift ? (
+                                  <div style={{ background: COLORS.accentSoft, borderRight: `3px solid ${COLORS.primary}`, borderRadius: '4px' }} className="px-2 py-1 text-xs text-right">
+                                    <div className="font-medium">{shift.start}–{shift.end}</div>
+                                    {shift.note && <div style={{ color: COLORS.inkSoft }}>{shift.note}</div>}
+                                  </div>
+                                ) : (isManager && <span style={{ color: COLORS.line }} className="text-xs">+</span>)}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          );
+        }
+
+        function App() {
+          const [weekStart, setWeekStart] = React.useState(getWeekStart(new Date()));
+          const weekDays = [...Array(7)].map((_, i) => addDays(weekStart, i));
+          const [editingCell, setEditingCell] = React.useState(null);
+
+          // עובדים לדוגמה כדי שהלוח לא יהיה ריק ומבאס
+          const demoRoster = [{ id: '1', name: 'ישראל ישראלי' }, { id: '2', name: 'נועה כהן' }];
+          const demoShifts = {
+            'ישראל ישראלי-0': { start: '08:00', end: '16:00', note: 'מהמשרד' },
+            'נועה כהן-1': { start: '09:00', end: '17:00', note: 'מהבית' }
+          };
+
+          return (
+            <div className="max-w-5xl mx-auto mt-8 p-6 bg-white rounded-xl shadow-md">
+              <div className="flex items-center justify-between mb-6 border-b pb-4 border-[#D9DED7]">
+                <h1 style={{ color: COLORS.primary }} className="text-3xl font-bold flex items-center gap-2">
+                  <Lucide.Calendar /> לוח הצוות שלי
+                </h1>
+                <div className="bg-[#F5E6C8] text-[#1F6F5C] px-3 py-1 rounded-full text-sm font-medium">
+                  מצב מנהל עבודה
+                </div>
+              </div>
+              
+              <ScheduleTab 
+                roster={demoRoster} 
+                weekDays={weekDays} 
+                weekStart={weekStart} 
+                setWeekStart={setWeekStart} 
+                shiftFor={(name, day) => demoShifts[`${name}-${day}`] || null} 
+                saveShift={() => {}} 
+                isManager={true} 
+                editingCell={editingCell} 
+                setEditingCell={setEditingCell} 
+              />
+            </div>
+          );
+        }
+
+        const { useState } = React;
+        const root = tragedies = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

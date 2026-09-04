@@ -4,79 +4,41 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>לוח הצוות</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;600;700&family=Assistant:wght@400;500;600;700&display=swap" />
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="stylesheet" href="https://googleapis.com" />
+<script src="https://tailwindcss.com"></script>
+<script src="https://unpkg.com"></script>
+<script src="https://unpkg.com"></script>
+<script src="https://unpkg.com"></script>
+<!-- הספרייה הרשמית של Supabase -->
+<script src="https://jsdelivr.net"></script>
 <style>body{margin:0}</style>
 </head>
 <body>
 <div id="root"></div>
 <script type="text/babel">
-const { useState, useEffect, useRef, useCallback } = React;
+const { useState, useEffect, useCallback } = React;
 
-/* ---- storage shim: localStorage-backed (per-device only, no cross-device sync) ---- */
-const storage = {
-  async get(key) {
-    const v = localStorage.getItem('teamboard:' + key);
-    return v === null ? null : { key, value: v };
-  },
-  async set(key, value) {
-    localStorage.setItem('teamboard:' + key, value);
-    return { key, value };
-  }
-};
-
-/* ---- Supabase (shifts table only - everything else still uses localStorage) ----
-   NOTE: the URL below was inferred from the "ref" inside your anon key
-   (sjqdhjypibusjucrgwck), since "https://supabase.co" alone is not a real
-   project URL. Double-check it against Project Settings -> API in Supabase,
-   and edit here if it doesn't match. */
-const SUPABASE_URL = 'https://sjqdhjypibusjucrgwck.supabase.co';
+/* ---- נתוני החיבור ל-Supabase ---- */
+const SUPABASE_URL = 'https://supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNqcWRoanlwaWJ1c2p1Y3Jnd2NrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg0NTE5ODQsImV4cCI6MjEwNDAyNzk4NH0.LxMNijruSLAL_QU8diYB7Wk6tO-7_w6zpoippM03bro';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-/* ---- simple emoji-based icons (no external icon library needed) ---- */
 function makeIcon(symbol) {
-  return function IconComp({ size = 16, color, style = {}, className }) {
-    return <span className={className} style={{ fontSize: size, color, lineHeight: 1, display: 'inline-block', ...style }}>{symbol}</span>;
+  return function IconComp({ size = 16, className }) {
+    return <span className={className} style={{ fontSize: size, lineHeight: 1, display: 'inline-block' }}>{symbol}</span>;
   };
 }
 const Calendar = makeIcon('📅');
-const MessageCircle = makeIcon('💬');
-const Video = makeIcon('🎥');
-const X = makeIcon('✕');
-const Users = makeIcon('👥');
-const Clock = makeIcon('🕐');
-const Copy = makeIcon('📋');
-const Check = makeIcon('✔️');
 const ChevronRight = makeIcon('›');
 const ChevronLeft = makeIcon('‹');
-const LogOut = makeIcon('🚪');
-const Send = makeIcon('➤');
-const Plus = makeIcon('➕');
-const KeyRound = makeIcon('🔑');
-const ImageIcon = makeIcon('🖼️');
-const Mic = makeIcon('🎤');
-const Camera = makeIcon('📷');
-const Link2 = makeIcon('🔗');
-const Hash = makeIcon('#');
-const UserIcon = makeIcon('👤');
+const X = makeIcon('✕');
 
 const COLORS = {
   bg: '#EEF0EB', surface: '#FFFFFF', ink: '#1C2624', inkSoft: '#5B6863',
-  primary: '#1F6F5C', primaryDark: '#14503F', accent: '#E0A83E', accentSoft: '#F5E6C8',
-  line: '#D9DED7', danger: '#C1443B',
+  primary: '#1F6F5C', accentSoft: '#F5E6C8', line: '#D9DED7', danger: '#C1443B',
 };
 
-const MANAGER_CODE = '2590';
-const MANAGER_NAME = 'דותן רוט';
 const DAY_NAMES = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
-const ZOOM_REGEX = /(https?:\/\/[a-zA-Z0-9.-]*zoom\.us\/\S+)/i;
-const ONLINE_WINDOW = 15000;
-const TYPING_WINDOW = 4000;
 
 function getWeekStart(date) {
   const d = new Date(date);
@@ -85,83 +47,24 @@ function getWeekStart(date) {
   d.setHours(0, 0, 0, 0);
   return d;
 }
-function formatDateKey(date) { return date.toISOString().slice(0, 10); }
 function addDays(date, n) { const d = new Date(date); d.setDate(d.getDate() + n); return d; }
-function uid() { return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`; }
-function generateCode(existingCodes) {
-  let code;
-  do { code = String(Math.floor(1000 + Math.random() * 9000)); }
-  while (code === MANAGER_CODE || existingCodes.includes(code));
-  return code;
-}
-function shiftEndTimestamp(shift) {
-  const d = new Date(shift.weekKey + 'T00:00:00');
-  d.setDate(d.getDate() + shift.dayIndex);
-  const [h, m] = (shift.end || '23:59').split(':').map(Number);
-  d.setHours(h, m, 0, 0);
-  return d.getTime();
-}
-function compressImage(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const img = new Image();
-      img.onload = () => {
-        const maxDim = 1000;
-        let { width, height } = img;
-        if (width > maxDim || height > maxDim) {
-          if (width > height) { height = Math.round(height * maxDim / width); width = maxDim; }
-          else { width = Math.round(width * maxDim / height); height = maxDim; }
-        }
-        const canvas = document.createElement('canvas');
-        canvas.width = width; canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL('image/jpeg', 0.7));
-      };
-      img.onerror = reject;
-      img.src = reader.result;
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-function readFileAsDataURL(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
+function generateCode() { return String(Math.floor(1000 + Math.random() * 9000)); }
 
-function EmptyState({ icon: Icon, text }) {
-  return (
-    <div style={{ border: `1px dashed ${COLORS.line}`, borderRadius: '8px', color: COLORS.inkSoft }} className="p-8 text-center text-sm">
-      <Icon size={22} className="mx-auto mb-2" />
-      {text}
-    </div>
-  );
-}
-
-/* ---------------- SCHEDULE ---------------- */
-function ScheduleTab({ roster, shiftFor, saveShift, isManager, editingCell, setEditingCell }) {
+/* ---------------- SCHEDULE TAB ---------------- */
+function ScheduleTab({ roster, shiftFor, saveShift, editingCell, setEditingCell }) {
   const [form, setForm] = useState({ start: '09:00', end: '17:00', note: '' });
+  
   useEffect(() => {
     if (editingCell) {
       const existing = shiftFor(editingCell.employeeName, editingCell.dayIndex);
       setForm(existing ? { start: existing.start, end: existing.end, note: existing.note || '' } : { start: '09:00', end: '17:00', note: '' });
     }
   }, [editingCell]);
-  function openCell(employeeName, dayIndex) { if (isManager) setEditingCell({ employeeName, dayIndex }); }
+  
   return (
     <div>
-      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-        <span style={{ color: COLORS.inkSoft }} className="text-sm font-medium">לוח משמרות שבועי קבוע (חוזר כל שבוע, מסונכרן דרך Supabase)</span>
-        {!isManager && <span style={{ color: COLORS.inkSoft }} className="text-xs">רק מנהל/ת יכולים לערוך משמרות</span>}
-      </div>
       {roster.length === 0 ? (
-        <EmptyState icon={Users} text={isManager ? 'עוד לא הוספת עובדים. עברו לטאב "ניהול צוות".' : 'אין עדיין עובדים בלוח'} />
+        <div className="p-8 text-center text-sm text-gray-400 border border-dashed rounded-lg">אין עדיין עובדים בלוח. עברו ללשונית "ניהול צוות" כדי להוסיף עובדים!</div>
       ) : (
         <div className="overflow-x-auto" style={{ border: `1px solid ${COLORS.line}`, borderRadius: '8px' }}>
           <table className="w-full text-sm" style={{ borderCollapse: 'collapse', minWidth: '700px' }}>
@@ -176,24 +79,18 @@ function ScheduleTab({ roster, shiftFor, saveShift, isManager, editingCell, setE
             <tbody>
               {roster.map((emp, ri) => (
                 <tr key={emp.id} style={{ background: ri % 2 === 0 ? COLORS.surface : '#F8F9F6' }}>
-                  <td style={{ borderBottom: `1px solid ${COLORS.line}` }} className="p-2.5 font-medium">
-                    <div className="flex items-center gap-1.5">
-                      <span style={{ width: 6, height: 6, borderRadius: 999, background: COLORS.primary }}></span>
-                      {emp.name}
-                    </div>
-                  </td>
+                  <td style={{ borderBottom: `1px solid ${COLORS.line}` }} className="p-2.5 font-medium">{emp.name}</td>
                   {DAY_NAMES.map((d, di) => {
                     const shift = shiftFor(emp.name, di);
                     return (
-                      <td key={di} onClick={() => openCell(emp.name, di)}
-                        style={{ borderBottom: `1px solid ${COLORS.line}`, cursor: isManager ? 'pointer' : 'default' }}
-                        className="p-1.5 text-center align-top">
+                      <td key={di} onClick={() => setEditingCell({ employeeName: emp.name, dayIndex: di })}
+                        style={{ borderBottom: `1px solid ${COLORS.line}` }} className="p-1.5 text-center align-top cursor-pointer hover:bg-gray-100">
                         {shift ? (
-                          <div style={{ background: COLORS.accentSoft, borderRight: `3px solid ${COLORS.primary}`, borderRadius: '4px' }} className="px-2 py-1 text-xs text-right">
+                          <div style={{ background: COLORS.accentSoft, borderRight: `3px solid ${COLORS.primary}`, borderRadius: '4px' }} className="px-2 py-1 text-xs text-right w-full block">
                             <div className="font-medium">{shift.start}–{shift.end}</div>
-                            {shift.note && <div style={{ color: COLORS.inkSoft }}>{shift.note}</div>}
+                            {shift.note && <div style={{ color: COLORS.inkSoft }} className="truncate">{shift.note}</div>}
                           </div>
-                        ) : (isManager && <span style={{ color: COLORS.line }} className="text-xs">+</span>)}
+                        ) : <span style={{ color: COLORS.line }} className="text-xs">+</span >}
                       </td>
                     );
                   })}
@@ -204,10 +101,10 @@ function ScheduleTab({ roster, shiftFor, saveShift, isManager, editingCell, setE
         </div>
       )}
       {editingCell && (
-        <div style={{ background: COLORS.surface, border: `1px solid ${COLORS.line}`, borderRadius: '8px' }} className="mt-4 p-4 max-w-sm">
+        <div style={{ background: COLORS.surface, border: `1px solid ${COLORS.line}`, borderRadius: '8px' }} className="mt-4 p-4 max-w-sm shadow-sm">
           <div className="flex items-center justify-between mb-3">
-            <h3 style={{ fontFamily: 'Rubik, sans-serif' }} className="text-sm font-semibold">משמרת: {editingCell.employeeName} · {DAY_NAMES[editingCell.dayIndex]}</h3>
-            <button onClick={() => setEditingCell(null)}><X size={16} style={{ color: COLORS.inkSoft }} /></button>
+            <h3 className="text-sm font-semibold text-[#1C2624]">משמרת: {editingCell.employeeName} · {DAY_NAMES[editingCell.dayIndex]}</h3>
+            <button onClick={() => setEditingCell(null)} className="cursor-pointer text-gray-400 hover:text-gray-600"><X size={14} /></button>
           </div>
           <div className="flex gap-2 mb-2">
             <div className="flex-1">
@@ -219,13 +116,13 @@ function ScheduleTab({ roster, shiftFor, saveShift, isManager, editingCell, setE
               <input type="time" value={form.end} onChange={e => setForm({ ...form, end: e.target.value })} style={{ border: `1px solid ${COLORS.line}`, borderRadius: '6px' }} className="w-full px-2 py-1.5 text-sm" />
             </div>
           </div>
-          <label style={{ color: COLORS.inkSoft }} className="text-xs block mb-1">הערה (תפקיד / עמדה)</label>
-          <input value={form.note} onChange={e => setForm({ ...form, note: e.target.value })} placeholder="לדוגמה: קופה" style={{ border: `1px solid ${COLORS.line}`, borderRadius: '6px' }} className="w-full px-2 py-1.5 text-sm mb-3" />
-          <div className="flex gap-2">
-            <button onClick={() => saveShift(editingCell.employeeName, editingCell.dayIndex, form)} style={{ background: COLORS.primaryDark, color: '#fff', borderRadius: '6px' }} className="flex-1 py-2 text-sm font-medium">שמירה</button>
-            {shiftFor(editingCell.employeeName, editingCell.dayIndex) && (
-              <button onClick={() => saveShift(editingCell.employeeName, editingCell.dayIndex, null)} style={{ border: `1px solid ${COLORS.danger}`, color: COLORS.danger, borderRadius: '6px' }} className="px-4 py-2 text-sm">מחיקה</button>
-            )}
+          <div className="mb-3">
+            <label style={{ color: COLORS.inkSoft }} className="text-xs block mb-1">הערה</label>
+            <input type="text" placeholder="למשל: מהבית" value={form.note} onChange={e => setForm({ ...form, note: e.target.value })} style={{ border: `1px solid ${COLORS.line}`, borderRadius: '6px' }} className="w-full px-2 py-1.5 text-sm" />
+          </div>
+          <div className="flex gap-2 justify-end">
+            <button onClick={() => saveShift(null)} style={{ color: COLORS.danger }} className="text-xs px-2 py-1.5 font-medium cursor-pointer hover:underline">מחק משמרת</button>
+            <button onClick={() => saveShift({ start: form.start, end: form.end, note: form.note })} style={{ background: COLORS.primary, color: COLORS.surface, borderRadius: '6px' }} className="text-xs px-3 py-1.5 font-medium cursor-pointer hover:bg-opacity-90">שמור</button>
           </div>
         </div>
       )}
@@ -233,769 +130,46 @@ function ScheduleTab({ roster, shiftFor, saveShift, isManager, editingCell, setE
   );
 }
 
-/* ---------------- STAFF ---------------- */
-function StaffTab({ roster, addPerson, removePerson, copyCode, copiedId }) {
-  const [name, setName] = useState('');
-  const [role, setRole] = useState('employee');
-  const [codeMode, setCodeMode] = useState('auto');
-  const [customCode, setCustomCode] = useState('');
-  const [error, setError] = useState('');
-
-  async function handleAdd() {
-    setError('');
-    if (!name.trim()) return;
-    let err;
-    if (codeMode === 'custom') {
-      const c = customCode.trim();
-      if (!/^\d{4}$/.test(c)) { setError('קוד מותאם אישית צריך להיות 4 ספרות'); return; }
-      if (c === MANAGER_CODE || roster.some(e => e.code === c)) { setError('הקוד הזה כבר תפוס, בחר/י קוד אחר'); return; }
-      err = await addPerson(name, role, c);
-    } else {
-      err = await addPerson(name, role, null);
-    }
-    if (err) { setError('שגיאה מה-Supabase: ' + err); return; }
-    setName(''); setCustomCode('');
-  }
-
+/* ---------------- TEAM MANAGEMENT TAB ---------------- */
+function TeamTab({ roster, onAddEmployee, onDeleteEmployee, errorMsg }) {
+  const [newEmpName, setNewEmpName] = useState('');
   return (
-    <div className="grid md:grid-cols-[1fr_320px] gap-5">
-      <div>
-        {roster.length === 0 ? (
-          <EmptyState icon={Users} text="עוד לא הוספת אף אחד" />
-        ) : (
-          <div className="flex flex-col gap-2">
-            {roster.map(p => (
-              <div key={p.id} style={{ border: `1px solid ${COLORS.line}`, borderRadius: '8px', background: COLORS.surface }} className="p-3.5 flex items-center justify-between gap-3 flex-wrap">
-                <div className="flex items-center gap-2">
-                  <span style={{ width: 7, height: 7, borderRadius: 999, background: p.role === 'manager' ? COLORS.accent : COLORS.primary }}></span>
-                  <div className="font-medium text-sm">{p.name}</div>
-                  <span style={{ color: COLORS.inkSoft }} className="text-xs">· {p.role === 'manager' ? 'מנהל/ת' : 'עובד/ת'}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div style={{ background: COLORS.accentSoft, borderRadius: '6px' }} className="flex items-center gap-1.5 px-2.5 py-1.5">
-                    <KeyRound size={13} style={{ color: COLORS.primaryDark }} />
-                    <span style={{ fontFamily: 'monospace, monospace', letterSpacing: '1px' }} className="text-sm font-semibold">{p.code}</span>
-                  </div>
-                  <button onClick={() => copyCode(p.code, p.id)} title="העתקת קוד" style={{ border: `1px solid ${COLORS.line}`, borderRadius: '6px' }} className="p-2">
-                    {copiedId === p.id ? <Check size={14} color={COLORS.primary} /> : <Copy size={14} style={{ color: COLORS.inkSoft }} />}
-                  </button>
-                  <button onClick={() => removePerson(p.id)} title="הסרה"><X size={15} style={{ color: COLORS.inkSoft }} /></button>
-                </div>
-              </div>
+    <div className="space-y-4">
+      <div className="bg-gray-50 p-4 rounded-lg border border-[#D9DED7]">
+        <h3 className="text-sm font-semibold mb-2">הוספת עובד/ת חדש/ה לצוות בענן</h3>
+        <div className="flex gap-2 max-w-md">
+          <input type="text" placeholder="שם עובד/ת" value={newEmpName} onChange={e => setNewEmpName(e.target.value)} className="px-3 py-1.5 text-sm border rounded bg-white w-full" />
+          <button onClick={() => { if(newEmpName.trim()) { onAddEmployee(newEmpName.trim()); setNewEmpName(''); } }} style={{ background: COLORS.primary }} className="text-white text-xs px-4 py-1.5 rounded font-medium cursor-pointer shrink-0">➕ הוסף</button>
+        </div>
+        {errorMsg && <p className="text-red-500 text-xs mt-2 font-medium">⚠️ שגיאה: {errorMsg}</p>}
+      </div>
+      <div className="border border-[#D9DED7] rounded-lg bg-white overflow-hidden">
+        <table className="w-full text-sm">
+          <thead className="bg-gray-50 border-b border-[#D9DED7]">
+            <tr>
+              <th className="p-3 text-right font-medium text-gray-500">שם איש הצוות</th>
+              <th className="p-3 text-center font-medium text-gray-500">קוד כניסה לאתר</th>
+              <th className="p-3 text-center font-medium text-gray-500">תפקיד</th>
+              <th className="p-3 text-left font-medium text-gray-500">פעולות</th>
+            </tr>
+          </thead>
+          <tbody>
+            {roster.map(emp => (
+              <tr key={emp.id} className="border-b border-gray-100 hover:bg-gray-50">
+                <td className="p-3 font-medium">{emp.name}</td>
+                <td className="p-3 text-center font-mono text-gray-600 bg-gray-50">{emp.code || 'מנהל'}</td>
+                <td className="p-3 text-center"><span className={`px-2 py-0.5 rounded-full text-xs font-medium ${emp.role === 'manager' ? 'bg-amber-100 text-amber-800' : 'bg-green-100 text-green-800'}`}>{emp.role === 'manager' ? 'מנהל' : 'עובד'}</span></td>
+                <td className="p-3 text-left">
+                  {emp.role !== 'manager' && (
+                    <button onClick={() => onDeleteEmployee(emp.id)} className="text-red-600 text-xs font-medium hover:underline cursor-pointer">מחק עובד</button>
+                  )}
+                </td>
+              </tr>
             ))}
-          </div>
-        )}
-      </div>
-      <div style={{ border: `1px solid ${COLORS.line}`, borderRadius: '8px', background: COLORS.surface }} className="p-4 h-fit">
-        <h3 style={{ fontFamily: 'Rubik, sans-serif' }} className="text-sm font-semibold mb-3">הוספת איש/אשת צוות</h3>
-        <label style={{ color: COLORS.inkSoft }} className="text-xs block mb-1">שם מלא</label>
-        <input value={name} onChange={e => setName(e.target.value)} placeholder="לדוגמה: דני לוי" style={{ border: `1px solid ${COLORS.line}`, borderRadius: '6px' }} className="w-full px-2.5 py-2 text-sm mb-3" />
-        <label style={{ color: COLORS.inkSoft }} className="text-xs block mb-2">תפקיד</label>
-        <div className="flex gap-2 mb-3">
-          <button onClick={() => setRole('employee')} style={{ background: role === 'employee' ? COLORS.primary : COLORS.surface, color: role === 'employee' ? '#fff' : COLORS.ink, border: `1px solid ${role === 'employee' ? COLORS.primary : COLORS.line}`, borderRadius: '6px' }} className="flex-1 py-1.5 text-sm">עובד/ת</button>
-          <button onClick={() => setRole('manager')} style={{ background: role === 'manager' ? COLORS.primary : COLORS.surface, color: role === 'manager' ? '#fff' : COLORS.ink, border: `1px solid ${role === 'manager' ? COLORS.primary : COLORS.line}`, borderRadius: '6px' }} className="flex-1 py-1.5 text-sm">מנהל/ת</button>
-        </div>
-        <label style={{ color: COLORS.inkSoft }} className="text-xs block mb-2">קוד כניסה</label>
-        <div className="flex gap-2 mb-2">
-          <button onClick={() => setCodeMode('auto')} style={{ background: codeMode === 'auto' ? COLORS.primary : COLORS.surface, color: codeMode === 'auto' ? '#fff' : COLORS.ink, border: `1px solid ${codeMode === 'auto' ? COLORS.primary : COLORS.line}`, borderRadius: '6px' }} className="flex-1 py-1.5 text-sm">המערכת תבחר</button>
-          <button onClick={() => setCodeMode('custom')} style={{ background: codeMode === 'custom' ? COLORS.primary : COLORS.surface, color: codeMode === 'custom' ? '#fff' : COLORS.ink, border: `1px solid ${codeMode === 'custom' ? COLORS.primary : COLORS.line}`, borderRadius: '6px' }} className="flex-1 py-1.5 text-sm">אני אבחר</button>
-        </div>
-        {codeMode === 'custom' && (
-          <input value={customCode} onChange={e => setCustomCode(e.target.value.replace(/\D/g, '').slice(0, 4))} placeholder="4 ספרות" inputMode="numeric"
-            style={{ border: `1px solid ${COLORS.line}`, borderRadius: '6px', letterSpacing: '2px', textAlign: 'center' }} className="w-full px-2.5 py-2 text-sm mb-2" />
-        )}
-        {error && <p style={{ color: COLORS.danger }} className="text-xs mb-2">{error}</p>}
-        <button onClick={handleAdd} disabled={!name.trim()} style={{ background: name.trim() ? COLORS.primaryDark : COLORS.line, color: '#fff', borderRadius: '6px' }} className="w-full py-2 text-sm font-medium flex items-center justify-center gap-1.5 mt-1">
-          <Plus size={14} />הוספה
-        </button>
-        <p style={{ color: COLORS.inkSoft }} className="text-[11px] mt-3">מסרו לאיש/אשת הצוות את הקוד — הכניסה איתו ישירה, בלי לבחור תפקיד.</p>
+          </tbody>
+        </table>
       </div>
     </div>
   );
 }
 
-/* ---------------- CHAT ---------------- */
-function AttachmentView({ attachment }) {
-  const [data, setData] = useState(null);
-  const [failed, setFailed] = useState(false);
-  useEffect(() => {
-    let alive = true;
-    (async () => {
-      try {
-        const { data: row, error } = await sb.from('attachments').select('*').eq('id', attachment.id).single();
-        if (!alive) return;
-        if (error || !row) setFailed(true);
-        else setData({ type: row.type, dataUrl: row.data_url, mime: row.mime });
-      } catch (e) { if (alive) setFailed(true); }
-    })();
-    return () => { alive = false; };
-  }, [attachment.id]);
-  if (failed) return <p style={{ color: COLORS.danger }} className="text-xs">לא ניתן לטעון את הקובץ</p>;
-  if (!data) return <p style={{ color: COLORS.inkSoft }} className="text-xs">טוען קובץ…</p>;
-  if (data.type === 'image') return <img src={data.dataUrl} alt="תמונה" style={{ maxWidth: '220px', borderRadius: '8px', display: 'block' }} />;
-  if (data.type === 'video') return <video src={data.dataUrl} controls style={{ maxWidth: '240px', borderRadius: '8px', display: 'block' }} />;
-  if (data.type === 'audio') return <audio src={data.dataUrl} controls style={{ maxWidth: '220px' }} />;
-  return null;
-}
-
-function MessageBody({ msg }) {
-  if (msg.type === 'meeting') {
-    return (
-      <div>
-        <div className="text-sm font-medium mb-1 flex items-center gap-1.5"><Video size={14} />{msg.meetingTitle}</div>
-        <a href={`https://meet.jit.si/${msg.roomId}`} target="_blank" rel="noopener noreferrer"
-          style={{ background: COLORS.accent, color: COLORS.ink, borderRadius: '6px', textDecoration: 'none' }} className="inline-block px-3 py-1.5 text-xs font-medium mt-1">הצטרפות לשיחה</a>
-      </div>
-    );
-  }
-  const zoomMatch = msg.text && msg.text.match(ZOOM_REGEX);
-  if (zoomMatch) {
-    return (
-      <div>
-        <div className="text-sm font-medium mb-1 flex items-center gap-1.5"><Link2 size={14} />שיחת Zoom אמיתית</div>
-        <a href={zoomMatch[1]} target="_blank" rel="noopener noreferrer"
-          style={{ background: COLORS.accent, color: COLORS.ink, borderRadius: '6px', textDecoration: 'none' }} className="inline-block px-3 py-1.5 text-xs font-medium">פתיחה ב-Zoom</a>
-      </div>
-    );
-  }
-  return (
-    <>
-      {msg.attachment && <div className="mb-1"><AttachmentView attachment={msg.attachment} /></div>}
-      {msg.text && <span>{msg.text}</span>}
-    </>
-  );
-}
-
-function ChatTab({
-  identity, isManager, channels, currentChannelId, setCurrentChannelId, contactNames,
-  channelMessages, chatInput, setChatInput, sendText, onTyping, attachFile, attachError,
-  quickZoom, showZoomLinkBox, setShowZoomLinkBox, zoomLinkInput, setZoomLinkInput, sendZoomLink,
-  onlineNames, typingNames, createGroup, openDm, addMemberToChannel, chatEndRef,
-}) {
-  const [showNewChat, setShowNewChat] = useState(false);
-  const [newChatMode, setNewChatMode] = useState('dm');
-  const [selectedNames, setSelectedNames] = useState([]);
-  const [groupName, setGroupName] = useState('');
-  const [showAddMember, setShowAddMember] = useState(false);
-  const imgInputRef = useRef(null);
-  const vidInputRef = useRef(null);
-  const audInputRef = useRef(null);
-
-  function toggleSelected(n) {
-    setSelectedNames(prev => prev.includes(n) ? prev.filter(x => x !== n) : [...prev, n]);
-  }
-  function handleCreate() {
-    if (newChatMode === 'dm') {
-      if (selectedNames.length !== 1) return;
-      openDm(selectedNames[0]);
-    } else {
-      if (!groupName.trim() || selectedNames.length === 0) return;
-      createGroup(groupName.trim(), selectedNames);
-    }
-    setShowNewChat(false); setSelectedNames([]); setGroupName('');
-  }
-  function handleKey(e) {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendText(); }
-  }
-
-  const currentChannel = channels.find(c => c.id === currentChannelId);
-  const notInGroup = currentChannel && currentChannel.type === 'group'
-    ? contactNames.filter(n => !currentChannel.memberNames.includes(n))
-    : [];
-
-  return (
-    <div className="grid md:grid-cols-[220px_1fr] gap-4">
-      <div style={{ border: `1px solid ${COLORS.line}`, borderRadius: '8px', background: COLORS.surface }} className="p-2 flex flex-col gap-1 h-fit">
-        {channels.map(c => (
-          <button key={c.id} onClick={() => setCurrentChannelId(c.id)}
-            style={{ background: currentChannelId === c.id ? COLORS.accentSoft : 'transparent', borderRadius: '6px', textAlign: 'right' }}
-            className="px-2.5 py-2 text-sm flex items-center gap-2">
-            {c.type === 'general' && <Hash size={14} style={{ color: COLORS.inkSoft }} />}
-            {c.type === 'group' && <Users size={14} style={{ color: COLORS.inkSoft }} />}
-            {c.type === 'dm' && <UserIcon size={14} style={{ color: COLORS.inkSoft }} />}
-            <span className="truncate">{c.name}</span>
-          </button>
-        ))}
-        <button onClick={() => setShowNewChat(v => !v)} style={{ color: COLORS.primaryDark, borderRadius: '6px' }} className="px-2.5 py-2 text-sm flex items-center gap-2 mt-1">
-          <Plus size={14} />שיחה חדשה
-        </button>
-        {showNewChat && (
-          <div style={{ border: `1px solid ${COLORS.line}`, borderRadius: '6px' }} className="p-2.5 mt-1">
-            <div className="flex gap-1.5 mb-2">
-              <button onClick={() => { setNewChatMode('dm'); setSelectedNames([]); }} style={{ background: newChatMode === 'dm' ? COLORS.primary : COLORS.bg, color: newChatMode === 'dm' ? '#fff' : COLORS.ink, borderRadius: '5px' }} className="flex-1 py-1 text-xs">אישי</button>
-              <button onClick={() => { setNewChatMode('group'); setSelectedNames([]); }} style={{ background: newChatMode === 'group' ? COLORS.primary : COLORS.bg, color: newChatMode === 'group' ? '#fff' : COLORS.ink, borderRadius: '5px' }} className="flex-1 py-1 text-xs">קבוצה</button>
-            </div>
-            {newChatMode === 'group' && (
-              <input value={groupName} onChange={e => setGroupName(e.target.value)} placeholder="שם הקבוצה" style={{ border: `1px solid ${COLORS.line}`, borderRadius: '5px' }} className="w-full px-2 py-1.5 text-xs mb-2" />
-            )}
-            <div style={{ maxHeight: '120px', overflowY: 'auto' }} className="flex flex-col gap-1 mb-2">
-              {contactNames.length === 0 && <p style={{ color: COLORS.inkSoft }} className="text-xs">אין עדיין אנשי קשר</p>}
-              {contactNames.map(n => (
-                <label key={n} className="flex items-center gap-1.5 text-xs">
-                  <input type={newChatMode === 'dm' ? 'radio' : 'checkbox'} name="contact" checked={selectedNames.includes(n)}
-                    onChange={() => newChatMode === 'dm' ? setSelectedNames([n]) : toggleSelected(n)} />
-                  {n}
-                </label>
-              ))}
-            </div>
-            <button onClick={handleCreate} style={{ background: COLORS.primaryDark, color: '#fff', borderRadius: '5px' }} className="w-full py-1.5 text-xs font-medium">יצירה</button>
-          </div>
-        )}
-      </div>
-
-      <div style={{ border: `1px solid ${COLORS.line}`, borderRadius: '8px', background: COLORS.surface }} className="flex flex-col">
-        <div style={{ borderBottom: `1px solid ${COLORS.line}` }} className="px-4 py-2.5 flex items-center justify-between flex-wrap gap-1">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium">{currentChannel ? currentChannel.name : ''}</span>
-            {isManager && currentChannel && currentChannel.type === 'group' && (
-              <button onClick={() => setShowAddMember(v => !v)} title="הוספת חברים לקבוצה" style={{ color: COLORS.primaryDark }} className="text-xs flex items-center gap-1">
-                <Plus size={12} />חברים
-              </button>
-            )}
-          </div>
-          <span style={{ color: COLORS.inkSoft }} className="text-xs">
-            {onlineNames.length > 0 ? `זמינים עכשיו: ${onlineNames.join(', ')}` : 'אין כרגע אף אחד מחובר'}
-          </span>
-        </div>
-        {showAddMember && currentChannel && currentChannel.type === 'group' && (
-          <div style={{ borderBottom: `1px solid ${COLORS.line}`, background: COLORS.bg }} className="p-2.5 flex flex-wrap gap-1.5">
-            {notInGroup.length === 0 && <span style={{ color: COLORS.inkSoft }} className="text-xs">כולם כבר בקבוצה</span>}
-            {notInGroup.map(n => (
-              <button key={n} onClick={() => addMemberToChannel(currentChannel.id, n)} style={{ border: `1px solid ${COLORS.line}`, borderRadius: '999px', background: COLORS.surface }} className="text-xs px-2.5 py-1">+ {n}</button>
-            ))}
-          </div>
-        )}
-        <div style={{ height: '320px' }} className="overflow-y-auto p-4 flex flex-col gap-3">
-          {channelMessages.length === 0 && <EmptyState icon={MessageCircle} text="עוד אין הודעות כאן. תתחילו שיחה." />}
-          {channelMessages.map(m => {
-            const mine = m.sender === identity.name;
-            return (
-              <div key={m.id} style={{ display: 'flex', flexDirection: 'column', maxWidth: '78%', marginLeft: mine ? 'auto' : 0, marginRight: mine ? 0 : 'auto' }}>
-                <div style={{ background: mine ? COLORS.primary : COLORS.bg, color: mine ? '#fff' : COLORS.ink, borderRadius: '10px' }} className="px-3 py-2 text-sm">
-                  {!mine && <div style={{ color: COLORS.primaryDark }} className="text-xs font-semibold mb-0.5">{m.sender}{m.role === 'manager' ? ' · מנהל/ת' : ''}</div>}
-                  <MessageBody msg={m} />
-                </div>
-                <span style={{ color: COLORS.inkSoft }} className="text-[11px] mt-0.5">{new Date(m.time).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}</span>
-              </div>
-            );
-          })}
-          <div ref={chatEndRef} />
-        </div>
-        {typingNames.length > 0 && (
-          <div style={{ color: COLORS.inkSoft }} className="px-4 text-xs pb-1">{typingNames.join(', ')} מקליד/ה…</div>
-        )}
-        {attachError && <div style={{ color: COLORS.danger }} className="px-4 text-xs pb-1">{attachError}</div>}
-        {showZoomLinkBox && (
-          <div style={{ borderTop: `1px solid ${COLORS.line}` }} className="p-2.5 flex gap-2">
-            <input value={zoomLinkInput} onChange={e => setZoomLinkInput(e.target.value)} placeholder="הדביקו כאן קישור זום אמיתי (https://zoom.us/j/...)"
-              style={{ border: `1px solid ${COLORS.line}`, borderRadius: '6px' }} className="flex-1 px-3 py-1.5 text-sm" />
-            <button onClick={sendZoomLink} style={{ background: COLORS.primaryDark, color: '#fff', borderRadius: '6px' }} className="px-3 py-1.5 text-xs font-medium">שליחה</button>
-            <button onClick={() => setShowZoomLinkBox(false)} style={{ color: COLORS.inkSoft }}><X size={16} /></button>
-          </div>
-        )}
-        <div style={{ borderTop: `1px solid ${COLORS.line}` }} className="p-3 flex items-center gap-2 flex-wrap">
-          <button onClick={() => imgInputRef.current && imgInputRef.current.click()} title="צירוף תמונה" style={{ color: COLORS.inkSoft }} className="p-1.5"><ImageIcon size={18} /></button>
-          <button onClick={() => vidInputRef.current && vidInputRef.current.click()} title="צילום/צירוף וידאו" style={{ color: COLORS.inkSoft }} className="p-1.5"><Camera size={18} /></button>
-          <button onClick={() => audInputRef.current && audInputRef.current.click()} title="צירוף הקלטה קולית" style={{ color: COLORS.inkSoft }} className="p-1.5"><Mic size={18} /></button>
-          <button onClick={quickZoom} title="שיחת וידאו מיידית" style={{ color: COLORS.inkSoft }} className="p-1.5"><Video size={18} /></button>
-          <button onClick={() => setShowZoomLinkBox(v => !v)} title="הוספת קישור זום אמיתי" style={{ color: COLORS.inkSoft }} className="p-1.5"><Link2 size={18} /></button>
-          <input value={chatInput} onChange={e => { setChatInput(e.target.value); onTyping(); }} onKeyDown={handleKey} placeholder="כתבו הודעה לצוות..."
-            style={{ border: `1px solid ${COLORS.line}`, borderRadius: '999px' }} className="flex-1 min-w-[140px] px-4 py-2 text-sm outline-none" />
-          <button onClick={sendText} style={{ background: COLORS.primaryDark, color: '#fff', borderRadius: '999px' }} className="w-10 h-10 flex items-center justify-center flex-shrink-0"><Send size={16} /></button>
-          <input ref={imgInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={e => { attachFile(e.target.files[0], 'image'); e.target.value = ''; }} />
-          <input ref={vidInputRef} type="file" accept="video/*" capture="environment" className="hidden" onChange={e => { attachFile(e.target.files[0], 'video'); e.target.value = ''; }} />
-          <input ref={audInputRef} type="file" accept="audio/*" className="hidden" onChange={e => { attachFile(e.target.files[0], 'audio'); e.target.value = ''; }} />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ---------------- MEETINGS ---------------- */
-function MeetingsTab({ meetings, meetingTitle, setMeetingTitle, meetingTime, setMeetingTime, sendTo, setSendTo, channels, createMeeting, deleteMeeting, copyLink, copiedId, identity }) {
-  const now = Date.now();
-  const upcoming = meetings.filter(m => new Date(m.time).getTime() >= now - 3600000);
-  const past = meetings.filter(m => new Date(m.time).getTime() < now - 3600000);
-  return (
-    <div className="grid md:grid-cols-[1fr_320px] gap-5">
-      <div>
-        {upcoming.length === 0 ? (
-          <EmptyState icon={Video} text="אין שיחות וידאו מתוכננות" />
-        ) : (
-          <div className="flex flex-col gap-2">
-            {upcoming.map(m => (
-              <div key={m.id} style={{ border: `1px solid ${COLORS.line}`, borderRadius: '8px', background: COLORS.surface }} className="p-3.5 flex items-center justify-between gap-3 flex-wrap">
-                <div>
-                  <div style={{ fontFamily: 'Rubik, sans-serif' }} className="font-medium text-sm">{m.title}</div>
-                  <div style={{ color: COLORS.inkSoft }} className="text-xs mt-0.5 flex items-center gap-1 flex-wrap">
-                    <Clock size={12} />
-                    {new Date(m.time).toLocaleString('he-IL', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                    <span>· נוצר ע"י {m.createdBy}</span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button onClick={() => copyLink(m.roomId, m.id)} title="העתקת קישור" style={{ border: `1px solid ${COLORS.line}`, borderRadius: '6px' }} className="p-2">
-                    {copiedId === m.id ? <Check size={14} color={COLORS.primary} /> : <Copy size={14} style={{ color: COLORS.inkSoft }} />}
-                  </button>
-                  <a href={`https://meet.jit.si/${m.roomId}`} target="_blank" rel="noopener noreferrer" style={{ background: COLORS.primaryDark, color: '#fff', borderRadius: '6px', textDecoration: 'none' }} className="px-3 py-2 text-xs font-medium flex items-center gap-1.5">
-                    <Video size={13} />הצטרפות
-                  </a>
-                  {m.createdBy === identity.name && <button onClick={() => deleteMeeting(m.id)} title="מחיקה"><X size={15} style={{ color: COLORS.inkSoft }} /></button>}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-        {past.length > 0 && (
-          <div className="mt-5">
-            <p style={{ color: COLORS.inkSoft }} className="text-xs mb-2">שיחות קודמות</p>
-            <div className="flex flex-col gap-1.5">
-              {past.slice(-5).reverse().map(m => (
-                <div key={m.id} style={{ color: COLORS.inkSoft }} className="text-xs flex items-center justify-between px-2">
-                  <span>{m.title}</span><span>{new Date(m.time).toLocaleDateString('he-IL')}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-      <div style={{ border: `1px solid ${COLORS.line}`, borderRadius: '8px', background: COLORS.surface }} className="p-4 h-fit">
-        <h3 style={{ fontFamily: 'Rubik, sans-serif' }} className="text-sm font-semibold mb-3">קביעת שיחה חדשה</h3>
-        <label style={{ color: COLORS.inkSoft }} className="text-xs block mb-1">נושא</label>
-        <input value={meetingTitle} onChange={e => setMeetingTitle(e.target.value)} placeholder="לדוגמה: תדריך שבועי" style={{ border: `1px solid ${COLORS.line}`, borderRadius: '6px' }} className="w-full px-2.5 py-2 text-sm mb-3" />
-        <label style={{ color: COLORS.inkSoft }} className="text-xs block mb-1">תאריך ושעה</label>
-        <input type="datetime-local" value={meetingTime} onChange={e => setMeetingTime(e.target.value)} style={{ border: `1px solid ${COLORS.line}`, borderRadius: '6px' }} className="w-full px-2.5 py-2 text-sm mb-3" />
-        <label style={{ color: COLORS.inkSoft }} className="text-xs block mb-1">שליחת הזמנה לצ'אט</label>
-        <select value={sendTo} onChange={e => setSendTo(e.target.value)} style={{ border: `1px solid ${COLORS.line}`, borderRadius: '6px' }} className="w-full px-2.5 py-2 text-sm mb-3">
-          <option value="none">לא לשלוח</option>
-          <option value="all">לכל הצ'אטים</option>
-          {channels.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-        </select>
-        <button onClick={createMeeting} disabled={!meetingTitle.trim() || !meetingTime} style={{ background: (meetingTitle.trim() && meetingTime) ? COLORS.primaryDark : COLORS.line, color: '#fff', borderRadius: '6px' }} className="w-full py-2 text-sm font-medium">קביעת שיחה</button>
-        <p style={{ color: COLORS.inkSoft }} className="text-[11px] mt-3">
-          השיחות רצות על Jitsi Meet — שירות חינמי, בלי הרשמה, נפתח בכרטיסייה חדשה עם מצלמה, מיקרופון, שיתוף מסך והשתקת משתתפים — בדיוק כמו זום. מי שפותח את השיחה בדרך כלל יכול/ה להשתיק/להסיר משתתפים מתוך מסך השיחה עצמו.
-        </p>
-      </div>
-    </div>
-  );
-}
-
-/* ---------------- MAIN ---------------- */
-function TeamBoard() {
-  const [identity, setIdentity] = useState(null);
-  const [identityLoading, setIdentityLoading] = useState(true);
-  const [codeInput, setCodeInput] = useState('');
-  const [loginError, setLoginError] = useState('');
-
-  const [roster, setRoster] = useState([]);
-  const [shifts, setShifts] = useState([]);
-  const [meetings, setMeetings] = useState([]);
-  const [channels, setChannels] = useState([]);
-  const [presence, setPresence] = useState({});
-  const [currentChannelId, setCurrentChannelId] = useState('general');
-  const [channelMessages, setChannelMessages] = useState([]);
-
-  const [tab, setTab] = useState('schedule');
-  const [editingCell, setEditingCell] = useState(null);
-  const [chatInput, setChatInput] = useState('');
-  const [attachError, setAttachError] = useState('');
-  const [showZoomLinkBox, setShowZoomLinkBox] = useState(false);
-  const [zoomLinkInput, setZoomLinkInput] = useState('');
-  const [meetingTitle, setMeetingTitle] = useState('');
-  const [meetingTime, setMeetingTime] = useState('');
-  const [sendTo, setSendTo] = useState('none');
-  const [copiedId, setCopiedId] = useState(null);
-
-  const chatEndRef = useRef(null);
-  const currentChannelIdRef = useRef('general');
-  const lastTypingWriteRef = useRef(0);
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await storage.get('my-identity');
-        if (res && res.value) setIdentity(JSON.parse(res.value));
-      } catch (e) {}
-      setIdentityLoading(false);
-    })();
-  }, []);
-
-  const GENERAL_CHANNEL = { id: 'general', type: 'general', name: 'כללי' };
-
-  const loadChannelMessages = useCallback(async (channelId) => {
-    try {
-      const { data, error } = await sb.from('messages').select('*').eq('channel_id', channelId).order('created_at', { ascending: true });
-      if (!error && data) {
-        setChannelMessages(data.map(row => ({
-          id: row.id, sender: row.sender, role: row.role, text: row.text || '',
-          type: row.type, meetingTitle: row.meeting_title, roomId: row.room_id,
-          attachment: row.attachment_id ? { id: row.attachment_id, type: row.attachment_type } : null,
-          time: row.created_at ? new Date(row.created_at).getTime() : Date.now(),
-        })));
-      } else {
-        if (error) console.error('Supabase messages load error:', error.message);
-        setChannelMessages([]);
-      }
-    } catch (e) { setChannelMessages([]); }
-  }, []);
-
-  async function loadChannels() {
-    try {
-      const { data, error } = await sb.from('channels').select('*');
-      if (!error && data) {
-        setChannels(data.map(row => ({ id: row.id, type: row.type, name: row.name, memberNames: JSON.parse(row.member_names || '[]') })));
-      } else if (error) console.error('Supabase channels load error:', error.message);
-    } catch (e) { console.error('Supabase unreachable:', e); }
-  }
-  async function loadMeetings() {
-    try {
-      const { data, error } = await sb.from('meetings').select('*').order('meeting_time', { ascending: true });
-      if (!error && data) {
-        setMeetings(data.map(row => ({ id: row.id, title: row.title, roomId: row.room_id, time: row.meeting_time, createdBy: row.created_by })));
-      } else if (error) console.error('Supabase meetings load error:', error.message);
-    } catch (e) { console.error('Supabase unreachable:', e); }
-  }
-
-  const loadAll = useCallback(async () => {
-    await loadShifts();
-    await loadEmployees();
-    await loadMeetings();
-    await loadChannels();
-    try { const p = await storage.get('presence'); setPresence(p ? JSON.parse(p.value) : {}); } catch (e) {}
-    loadChannelMessages(currentChannelIdRef.current);
-  }, [loadChannelMessages]);
-
-  useEffect(() => {
-    loadAll();
-    const iv = setInterval(loadAll, 3500);
-    return () => clearInterval(iv);
-  }, [loadAll]);
-
-  useEffect(() => {
-    currentChannelIdRef.current = currentChannelId;
-    loadChannelMessages(currentChannelId);
-  }, [currentChannelId, loadChannelMessages]);
-
-  useEffect(() => {
-    if (tab === 'chat' && chatEndRef.current) chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
-  }, [channelMessages, tab]);
-
-  useEffect(() => {
-    if (!identity) return;
-    let alive = true;
-    async function beat() {
-      try {
-        const r = await storage.get('presence');
-        const pres = r ? JSON.parse(r.value) : {};
-        pres[identity.name] = { ...(pres[identity.name] || {}), lastSeen: Date.now(), role: identity.role };
-        await storage.set('presence', JSON.stringify(pres));
-        if (alive) setPresence(pres);
-      } catch (e) {}
-    }
-    beat();
-    const iv = setInterval(beat, 6000);
-    return () => { alive = false; clearInterval(iv); };
-  }, [identity]);
-
-  async function finalizeLogin(newIdentity) {
-    await storage.set('my-identity', JSON.stringify(newIdentity));
-    setIdentity(newIdentity);
-  }
-  function handleCodeSubmit() {
-    const code = codeInput.trim();
-    setLoginError('');
-    if (!code) return;
-    if (code === MANAGER_CODE) { finalizeLogin({ name: MANAGER_NAME, role: 'manager', code }); return; }
-    const p = roster.find(e => e.code === code);
-    if (p) finalizeLogin({ name: p.name, role: p.role, code });
-    else setLoginError('קוד לא נמצא. בדוק/י את הקוד או פנה/י למנהל.');
-  }
-  function switchIdentity() {
-    setIdentity(null); setCodeInput(''); setLoginError('');
-  }
-
-  const isManager = identity?.role === 'manager';
-  const rosterEmployees = roster.filter(p => p.role !== 'manager');
-
-  async function loadShifts() {
-    try {
-      const { data, error } = await sb.from('shifts').select('*');
-      if (!error && data) {
-        setShifts(data.map(row => ({
-          id: row.id,
-          employeeName: row.employee_name,
-          dayIndex: row.day_index,
-          start: row.start_time,
-          end: row.end_time,
-          note: row.note,
-        })));
-      } else if (error) {
-        console.error('Supabase shifts load error:', error.message);
-      }
-    } catch (e) { console.error('Supabase unreachable:', e); }
-  }
-  function shiftFor(employeeName, dayIndex) {
-    return shifts.find(s => s.dayIndex === dayIndex && s.employeeName === employeeName);
-  }
-  async function saveShift(employeeName, dayIndex, data) {
-    const existing = shiftFor(employeeName, dayIndex);
-    try {
-      if (data === null) {
-        if (existing) await sb.from('shifts').delete().eq('id', existing.id);
-      } else if (existing) {
-        await sb.from('shifts').update({ start_time: data.start, end_time: data.end, note: data.note }).eq('id', existing.id);
-      } else {
-        await sb.from('shifts').insert({ employee_name: employeeName, day_index: dayIndex, start_time: data.start, end_time: data.end, note: data.note });
-      }
-    } catch (e) { console.error('Supabase shift save error:', e); }
-    await loadShifts();
-    setEditingCell(null);
-  }
-
-  async function loadEmployees() {
-    try {
-      const { data, error } = await sb.from('employees').select('*');
-      if (!error && data) {
-        setRoster(data.map(row => ({ id: row.id, name: row.name, code: row.code, role: row.role || 'employee' })));
-      } else if (error) {
-        console.error('Supabase employees load error:', error.message);
-      }
-    } catch (e) { console.error('Supabase unreachable:', e); }
-  }
-  async function addPerson(name, role, customCode) {
-    const code = customCode || generateCode(roster.map(e => e.code).filter(Boolean));
-    try {
-      const { error } = await sb.from('employees').insert({ name: name.trim(), code, role });
-      if (error) return error.message;
-    } catch (e) { return 'שגיאת חיבור ל-Supabase'; }
-    await loadEmployees();
-    return null;
-  }
-  async function removePerson(id) {
-    try {
-      const { error } = await sb.from('employees').delete().eq('id', id);
-      if (error) console.error('Supabase remove employee error:', error.message);
-    } catch (e) { console.error('Supabase unreachable:', e); }
-    await loadEmployees();
-  }
-  function copyCode(code, id) {
-    if (navigator.clipboard) navigator.clipboard.writeText(code);
-    setCopiedId(id); setTimeout(() => setCopiedId(null), 1500);
-  }
-
-  const visibleChannels = [GENERAL_CHANNEL, ...channels.filter(c => isManager || (identity && c.memberNames && c.memberNames.includes(identity.name)))];
-  const contactNames = identity ? Array.from(new Set([...roster.map(e => e.name), ...Object.keys(presence), MANAGER_NAME])).filter(n => n !== identity.name) : [];
-
-  async function createGroup(name, memberNames) {
-    const ch = { id: `group-${uid()}`, type: 'group', name, memberNames: Array.from(new Set([...memberNames, identity.name])) };
-    try {
-      const { error } = await sb.from('channels').insert({ id: ch.id, type: ch.type, name: ch.name, member_names: JSON.stringify(ch.memberNames) });
-      if (error) console.error('Supabase channel insert error:', error.message);
-    } catch (e) { console.error('Supabase unreachable:', e); }
-    await loadChannels();
-    setCurrentChannelId(ch.id);
-    setTab('chat');
-  }
-  async function openDm(otherName) {
-    const dmId = 'dm:' + [identity.name, otherName].sort().join('|');
-    const existing = channels.find(c => c.id === dmId);
-    if (!existing) {
-      try {
-        const { error } = await sb.from('channels').insert({ id: dmId, type: 'dm', name: otherName, member_names: JSON.stringify([identity.name, otherName]) });
-        if (error) console.error('Supabase dm insert error:', error.message);
-      } catch (e) { console.error('Supabase unreachable:', e); }
-      await loadChannels();
-    }
-    setCurrentChannelId(dmId);
-    setTab('chat');
-  }
-  async function addMemberToChannel(channelId, name) {
-    const ch = channels.find(c => c.id === channelId);
-    if (!ch) return;
-    const updated = Array.from(new Set([...ch.memberNames, name]));
-    try {
-      const { error } = await sb.from('channels').update({ member_names: JSON.stringify(updated) }).eq('id', channelId);
-      if (error) console.error('Supabase channel update error:', error.message);
-    } catch (e) { console.error('Supabase unreachable:', e); }
-    await loadChannels();
-  }
-
-  async function postMessage(channelId, extra) {
-    const msg = { id: uid(), sender: identity.name, role: identity.role, text: '', ...extra };
-    try {
-      const { error } = await sb.from('messages').insert({
-        id: msg.id, channel_id: channelId, sender: msg.sender, role: msg.role, text: msg.text || '',
-        type: msg.type || null, meeting_title: msg.meetingTitle || null, room_id: msg.roomId || null,
-        attachment_id: msg.attachment ? msg.attachment.id : null, attachment_type: msg.attachment ? msg.attachment.type : null,
-      });
-      if (error) console.error('Supabase message insert error:', error.message);
-    } catch (e) { console.error('Supabase unreachable:', e); }
-    if (channelId === currentChannelIdRef.current) await loadChannelMessages(channelId);
-  }
-  async function sendText() {
-    if (!chatInput.trim()) return;
-    await postMessage(currentChannelId, { text: chatInput.trim() });
-    setChatInput('');
-  }
-  async function sendZoomLink() {
-    if (!zoomLinkInput.trim()) return;
-    await postMessage(currentChannelId, { text: zoomLinkInput.trim() });
-    setZoomLinkInput(''); setShowZoomLinkBox(false);
-  }
-  async function quickZoom() {
-    const roomId = `team-board-${currentChannelId}-${Date.now().toString(36)}`;
-    await postMessage(currentChannelId, { type: 'meeting', meetingTitle: 'שיחת וידאו מיידית', roomId });
-    try {
-      const { error } = await sb.from('meetings').insert({ id: uid(), title: 'שיחת וידאו מיידית', room_id: roomId, meeting_time: new Date().toISOString(), created_by: identity.name });
-      if (error) console.error('Supabase meeting insert error:', error.message);
-    } catch (e) { console.error('Supabase unreachable:', e); }
-    await loadMeetings();
-  }
-  function notifyTyping() {
-    const now = Date.now();
-    if (now - lastTypingWriteRef.current < 1500) return;
-    lastTypingWriteRef.current = now;
-    (async () => {
-      try {
-        const r = await storage.get('presence');
-        const pres = r ? JSON.parse(r.value) : {};
-        pres[identity.name] = { ...(pres[identity.name] || {}), lastSeen: now, role: identity.role, typingIn: currentChannelIdRef.current, typingAt: now };
-        await storage.set('presence', JSON.stringify(pres));
-        setPresence(pres);
-      } catch (e) {}
-    })();
-  }
-  async function attachFile(file, kind) {
-    setAttachError('');
-    if (!file) return;
-    try {
-      let dataUrl;
-      if (kind === 'image') dataUrl = await compressImage(file);
-      else {
-        if (file.size > 3 * 1024 * 1024) { setAttachError('הקובץ גדול מדי (מעל 3MB). נסה קובץ קצר/קטן יותר.'); return; }
-        dataUrl = await readFileAsDataURL(file);
-      }
-      if (dataUrl.length > 4.5 * 1024 * 1024) { setAttachError('הקובץ גדול מדי לשמירה. נסה קובץ קטן יותר.'); return; }
-      const attId = uid();
-      const { error } = await sb.from('attachments').insert({ id: attId, type: kind, data_url: dataUrl, mime: file.type });
-      if (error) { setAttachError('שגיאה בשמירת הקובץ ל-Supabase: ' + error.message); return; }
-      await postMessage(currentChannelId, { attachment: { id: attId, type: kind } });
-    } catch (e) { setAttachError('לא ניתן היה לצרף את הקובץ.'); }
-  }
-
-  async function createMeeting() {
-    if (!meetingTitle.trim() || !meetingTime) return;
-    const roomId = `team-board-${meetingTitle.trim().replace(/\s+/g, '-')}-${Date.now().toString(36)}`;
-    const meeting = { id: uid(), title: meetingTitle.trim(), time: meetingTime, roomId, createdBy: identity.name };
-    try {
-      const { error } = await sb.from('meetings').insert({ id: meeting.id, title: meeting.title, room_id: meeting.roomId, meeting_time: meeting.time, created_by: meeting.createdBy });
-      if (error) console.error('Supabase meeting insert error:', error.message);
-    } catch (e) { console.error('Supabase unreachable:', e); }
-    await loadMeetings();
-    if (sendTo === 'all') {
-      for (const c of visibleChannels) await postMessage(c.id, { type: 'meeting', meetingTitle: meeting.title, roomId: meeting.roomId });
-    } else if (sendTo !== 'none') {
-      await postMessage(sendTo, { type: 'meeting', meetingTitle: meeting.title, roomId: meeting.roomId });
-    }
-    setMeetingTitle(''); setMeetingTime(''); setSendTo('none');
-  }
-  async function deleteMeeting(id) {
-    try {
-      const { error } = await sb.from('meetings').delete().eq('id', id);
-      if (error) console.error('Supabase meeting delete error:', error.message);
-    } catch (e) { console.error('Supabase unreachable:', e); }
-    await loadMeetings();
-  }
-  function copyLink(roomId, id) {
-    const url = `https://meet.jit.si/${roomId}`;
-    if (navigator.clipboard) navigator.clipboard.writeText(url);
-    setCopiedId(id); setTimeout(() => setCopiedId(null), 1500);
-  }
-
-  const now = Date.now();
-  const onlineNames = Object.entries(presence).filter(([n, v]) => n !== identity?.name && now - v.lastSeen < ONLINE_WINDOW).map(([n]) => n);
-  const typingNames = Object.entries(presence).filter(([n, v]) => n !== identity?.name && v.typingIn === currentChannelId && now - (v.typingAt || 0) < TYPING_WINDOW).map(([n]) => n);
-
-  if (identityLoading) {
-    return <div style={{ background: COLORS.bg, minHeight: '500px' }} className="flex items-center justify-center p-8"><p style={{ color: COLORS.inkSoft, fontFamily: 'Assistant, sans-serif' }}>טוען...</p></div>;
-  }
-
-  if (!identity) {
-    return (
-      <div dir="rtl" style={{ background: COLORS.bg, fontFamily: 'Assistant, sans-serif', minHeight: '100vh' }} className="flex items-center justify-center p-6">
-        <div style={{ background: COLORS.surface, border: `1px solid ${COLORS.line}`, borderRadius: '10px' }} className="w-full max-w-sm p-6">
-          <h1 style={{ fontFamily: 'Rubik, sans-serif', color: COLORS.ink }} className="text-xl font-semibold mb-1">לוח הצוות</h1>
-          <p style={{ color: COLORS.inkSoft }} className="text-sm mb-5">הזן/י את הקוד האישי שקיבלת. מנהל/ת נכנסים עם קוד הניהול.</p>
-          <label style={{ color: COLORS.ink }} className="text-sm font-medium block mb-1">קוד כניסה</label>
-          <input value={codeInput} onChange={e => { setCodeInput(e.target.value); setLoginError(''); }} onKeyDown={e => e.key === 'Enter' && handleCodeSubmit()}
-            placeholder="לדוגמה: 4821" inputMode="numeric"
-            style={{ border: `1px solid ${loginError ? COLORS.danger : COLORS.line}`, borderRadius: '6px', letterSpacing: '2px', textAlign: 'center', fontSize: '18px' }} className="w-full px-3 py-2 mb-1.5 outline-none" />
-          {loginError && <p style={{ color: COLORS.danger }} className="text-xs mb-3">{loginError}</p>}
-          <button onClick={handleCodeSubmit} disabled={!codeInput.trim()} style={{ background: codeInput.trim() ? COLORS.primaryDark : COLORS.line, color: '#fff', borderRadius: '6px' }} className="w-full py-2.5 text-sm font-medium mt-3">כניסה</button>
-        </div>
-      </div>
-    );
-  }
-
-  const tabs = [
-    { id: 'schedule', label: 'לוח משמרות', icon: Calendar },
-    { id: 'chat', label: "צ'אט צוות", icon: MessageCircle },
-    { id: 'meetings', label: 'שיחות וידאו', icon: Video },
-  ];
-  if (isManager) tabs.push({ id: 'staff', label: 'ניהול צוות', icon: Users });
-
-  return (
-    <div dir="rtl" style={{ background: COLORS.bg, fontFamily: 'Assistant, sans-serif', minHeight: '100vh', color: COLORS.ink }} className="p-4 md:p-6">
-      <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
-        <div>
-          <h1 style={{ fontFamily: 'Rubik, sans-serif' }} className="text-xl font-semibold">לוח הצוות</h1>
-          <p style={{ color: COLORS.inkSoft }} className="text-xs mt-0.5">משמרות, צ'אט ושיחות וידאו במקום אחד</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <div style={{ background: COLORS.surface, border: `1px solid ${COLORS.line}`, borderRadius: '999px' }} className="flex items-center gap-2 px-3 py-1.5 text-sm">
-            <span style={{ width: 8, height: 8, borderRadius: 999, background: isManager ? COLORS.accent : COLORS.primary }}></span>
-            <span className="font-medium">{identity.name}</span>
-            <span style={{ color: COLORS.inkSoft }}>· {isManager ? 'מנהל/ת' : 'עובד/ת'}</span>
-          </div>
-          <button onClick={switchIdentity} title="יציאה" style={{ color: COLORS.inkSoft }} className="p-1.5"><LogOut size={16} /></button>
-        </div>
-      </div>
-
-      <div style={{ borderBottom: `1px solid ${COLORS.line}` }} className="flex gap-1 mb-5 overflow-x-auto">
-        {tabs.map(t => (
-          <button key={t.id} onClick={() => setTab(t.id)}
-            style={{ color: tab === t.id ? COLORS.primaryDark : COLORS.inkSoft, borderBottom: tab === t.id ? `2px solid ${COLORS.primaryDark}` : '2px solid transparent' }}
-            className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium -mb-px whitespace-nowrap">
-            <t.icon size={15} />{t.label}
-          </button>
-        ))}
-      </div>
-
-      {tab === 'schedule' && (
-        <ScheduleTab roster={rosterEmployees} shiftFor={shiftFor} saveShift={saveShift} isManager={isManager} editingCell={editingCell} setEditingCell={setEditingCell} />
-      )}
-      {tab === 'chat' && (
-        <ChatTab identity={identity} isManager={isManager} channels={visibleChannels} currentChannelId={currentChannelId} setCurrentChannelId={setCurrentChannelId}
-          contactNames={contactNames} channelMessages={channelMessages} chatInput={chatInput} setChatInput={setChatInput}
-          sendText={sendText} onTyping={notifyTyping} attachFile={attachFile} attachError={attachError}
-          quickZoom={quickZoom} showZoomLinkBox={showZoomLinkBox} setShowZoomLinkBox={setShowZoomLinkBox}
-          zoomLinkInput={zoomLinkInput} setZoomLinkInput={setZoomLinkInput} sendZoomLink={sendZoomLink}
-          onlineNames={onlineNames} typingNames={typingNames} createGroup={createGroup} openDm={openDm}
-          addMemberToChannel={addMemberToChannel} chatEndRef={chatEndRef} />
-      )}
-      {tab === 'meetings' && (
-        <MeetingsTab meetings={meetings} meetingTitle={meetingTitle} setMeetingTitle={setMeetingTitle} meetingTime={meetingTime} setMeetingTime={setMeetingTime}
-          sendTo={sendTo} setSendTo={setSendTo} channels={visibleChannels} createMeeting={createMeeting} deleteMeeting={deleteMeeting}
-          copyLink={copyLink} copiedId={copiedId} identity={identity} />
-      )}
-      {tab === 'staff' && isManager && (
-        <StaffTab roster={roster} addPerson={addPerson} removePerson={removePerson} copyCode={copyCode} copiedId={copiedId} />
-      )}
-    </div>
-  );
-}
-
-ReactDOM.createRoot(document.getElementById('root')).render(<TeamBoard />);
-</script>
-</body>
-</html>

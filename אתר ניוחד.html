@@ -9,6 +9,7 @@
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>body{margin:0}</style>
 </head>
 <body>
@@ -27,6 +28,15 @@ const storage = {
     return { key, value };
   }
 };
+
+/* ---- Supabase (shifts table only - everything else still uses localStorage) ----
+   NOTE: the URL below was inferred from the "ref" inside your anon key
+   (sjqdhjypibusjucrgwck), since "https://supabase.co" alone is not a real
+   project URL. Double-check it against Project Settings -> API in Supabase,
+   and edit here if it doesn't match. */
+const SUPABASE_URL = 'https://sjqdhjypibusjucrgwck.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNqcWRoanlwaWJ1c2p1Y3Jnd2NrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg0NTE5ODQsImV4cCI6MjEwNDAyNzk4NH0.LxMNijruSLAL_QU8diYB7Wk6tO-7_w6zpoippM03bro';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 /* ---- simple emoji-based icons (no external icon library needed) ---- */
 function makeIcon(symbol) {
@@ -135,7 +145,7 @@ function EmptyState({ icon: Icon, text }) {
 }
 
 /* ---------------- SCHEDULE ---------------- */
-function ScheduleTab({ roster, weekDays, weekStart, setWeekStart, shiftFor, saveShift, isManager, editingCell, setEditingCell }) {
+function ScheduleTab({ roster, shiftFor, saveShift, isManager, editingCell, setEditingCell }) {
   const [form, setForm] = useState({ start: '09:00', end: '17:00', note: '' });
   useEffect(() => {
     if (editingCell) {
@@ -143,16 +153,11 @@ function ScheduleTab({ roster, weekDays, weekStart, setWeekStart, shiftFor, save
       setForm(existing ? { start: existing.start, end: existing.end, note: existing.note || '' } : { start: '09:00', end: '17:00', note: '' });
     }
   }, [editingCell]);
-  const rangeLabel = `${weekDays[0].toLocaleDateString('he-IL', { day: 'numeric', month: 'short' })} – ${weekDays[6].toLocaleDateString('he-IL', { day: 'numeric', month: 'short' })}`;
   function openCell(employeeName, dayIndex) { if (isManager) setEditingCell({ employeeName, dayIndex }); }
   return (
     <div>
       <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-        <div className="flex items-center gap-2">
-          <button onClick={() => setWeekStart(addDays(weekStart, -7))} style={{ border: `1px solid ${COLORS.line}`, borderRadius: '6px' }} className="p-1.5"><ChevronRight size={16} /></button>
-          <span style={{ color: COLORS.inkSoft }} className="text-sm font-medium min-w-[120px] text-center inline-block">{rangeLabel}</span>
-          <button onClick={() => setWeekStart(addDays(weekStart, 7))} style={{ border: `1px solid ${COLORS.line}`, borderRadius: '6px' }} className="p-1.5"><ChevronLeft size={16} /></button>
-        </div>
+        <span style={{ color: COLORS.inkSoft }} className="text-sm font-medium">לוח משמרות שבועי קבוע (חוזר כל שבוע, מסונכרן דרך Supabase)</span>
         {!isManager && <span style={{ color: COLORS.inkSoft }} className="text-xs">רק מנהל/ת יכולים לערוך משמרות</span>}
       </div>
       {roster.length === 0 ? (
@@ -163,11 +168,8 @@ function ScheduleTab({ roster, weekDays, weekStart, setWeekStart, shiftFor, save
             <thead>
               <tr style={{ background: COLORS.surface }}>
                 <th style={{ borderBottom: `1px solid ${COLORS.line}`, color: COLORS.inkSoft }} className="text-right p-2.5 font-medium">עובד/ת</th>
-                {weekDays.map((d, i) => (
-                  <th key={i} style={{ borderBottom: `1px solid ${COLORS.line}`, color: COLORS.inkSoft }} className="p-2.5 font-medium text-center">
-                    <div>{DAY_NAMES[i]}</div>
-                    <div style={{ fontWeight: 400, fontSize: '11px' }}>{d.toLocaleDateString('he-IL', { day: 'numeric', month: 'numeric' })}</div>
-                  </th>
+                {DAY_NAMES.map((d, i) => (
+                  <th key={i} style={{ borderBottom: `1px solid ${COLORS.line}`, color: COLORS.inkSoft }} className="p-2.5 font-medium text-center">{d}</th>
                 ))}
               </tr>
             </thead>
@@ -180,7 +182,7 @@ function ScheduleTab({ roster, weekDays, weekStart, setWeekStart, shiftFor, save
                       {emp.name}
                     </div>
                   </td>
-                  {weekDays.map((d, di) => {
+                  {DAY_NAMES.map((d, di) => {
                     const shift = shiftFor(emp.name, di);
                     return (
                       <td key={di} onClick={() => openCell(emp.name, di)}
@@ -227,7 +229,6 @@ function ScheduleTab({ roster, weekDays, weekStart, setWeekStart, shiftFor, save
           </div>
         </div>
       )}
-      <p style={{ color: COLORS.inkSoft }} className="text-[11px] mt-3">משמרות נעלמות אוטומטית מהלוח לאחר שעת הסיום שלהן.</p>
     </div>
   );
 }
@@ -591,7 +592,6 @@ function TeamBoard() {
   const [channelMessages, setChannelMessages] = useState([]);
 
   const [tab, setTab] = useState('schedule');
-  const [weekStart, setWeekStart] = useState(getWeekStart(new Date()));
   const [editingCell, setEditingCell] = useState(null);
   const [chatInput, setChatInput] = useState('');
   const [attachError, setAttachError] = useState('');
@@ -626,14 +626,7 @@ function TeamBoard() {
   }, []);
 
   const loadAll = useCallback(async () => {
-    try {
-      const s = await storage.get('shifts');
-      let list = s ? JSON.parse(s.value) : [];
-      const now = Date.now();
-      const fresh = list.filter(sh => shiftEndTimestamp(sh) >= now);
-      setShifts(fresh);
-      if (fresh.length !== list.length) await storage.set('shifts', JSON.stringify(fresh));
-    } catch (e) {}
+    await loadShifts();
     try { const r = await storage.get('roster'); setRoster(r ? JSON.parse(r.value) : []); } catch (e) {}
     try { const mt = await storage.get('meetings'); setMeetings(mt ? JSON.parse(mt.value) : []); } catch (e) {}
     try { const c = await storage.get('channels'); setChannels(c ? JSON.parse(c.value) : []); } catch (e) {}
@@ -691,23 +684,40 @@ function TeamBoard() {
   }
 
   const isManager = identity?.role === 'manager';
-  const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
-  const weekKey = formatDateKey(weekStart);
   const rosterEmployees = roster.filter(p => p.role !== 'manager');
 
+  async function loadShifts() {
+    try {
+      const { data, error } = await sb.from('shifts').select('*');
+      if (!error && data) {
+        setShifts(data.map(row => ({
+          id: row.id,
+          employeeName: row.employee_name,
+          dayIndex: row.day_index,
+          start: row.start_time,
+          end: row.end_time,
+          note: row.note,
+        })));
+      } else if (error) {
+        console.error('Supabase shifts load error:', error.message);
+      }
+    } catch (e) { console.error('Supabase unreachable:', e); }
+  }
   function shiftFor(employeeName, dayIndex) {
-    return shifts.find(s => s.weekKey === weekKey && s.dayIndex === dayIndex && s.employeeName === employeeName);
+    return shifts.find(s => s.dayIndex === dayIndex && s.employeeName === employeeName);
   }
   async function saveShift(employeeName, dayIndex, data) {
-    let list = [...shifts];
-    const idx = list.findIndex(s => s.weekKey === weekKey && s.dayIndex === dayIndex && s.employeeName === employeeName);
-    if (data === null) { if (idx >= 0) list.splice(idx, 1); }
-    else {
-      const shift = { id: idx >= 0 ? list[idx].id : uid(), weekKey, dayIndex, employeeName, ...data };
-      if (idx >= 0) list[idx] = shift; else list.push(shift);
-    }
-    setShifts(list);
-    await storage.set('shifts', JSON.stringify(list));
+    const existing = shiftFor(employeeName, dayIndex);
+    try {
+      if (data === null) {
+        if (existing) await sb.from('shifts').delete().eq('id', existing.id);
+      } else if (existing) {
+        await sb.from('shifts').update({ start_time: data.start, end_time: data.end, note: data.note }).eq('id', existing.id);
+      } else {
+        await sb.from('shifts').insert({ employee_name: employeeName, day_index: dayIndex, start_time: data.start, end_time: data.end, note: data.note });
+      }
+    } catch (e) { console.error('Supabase shift save error:', e); }
+    await loadShifts();
     setEditingCell(null);
   }
 
@@ -899,8 +909,7 @@ function TeamBoard() {
       </div>
 
       {tab === 'schedule' && (
-        <ScheduleTab roster={rosterEmployees} weekDays={weekDays} weekStart={weekStart} setWeekStart={setWeekStart}
-          shiftFor={shiftFor} saveShift={saveShift} isManager={isManager} editingCell={editingCell} setEditingCell={setEditingCell} />
+        <ScheduleTab roster={rosterEmployees} shiftFor={shiftFor} saveShift={saveShift} isManager={isManager} editingCell={editingCell} setEditingCell={setEditingCell} />
       )}
       {tab === 'chat' && (
         <ChatTab identity={identity} isManager={isManager} channels={visibleChannels} currentChannelId={currentChannelId} setCurrentChannelId={setCurrentChannelId}
@@ -927,5 +936,3 @@ ReactDOM.createRoot(document.getElementById('root')).render(<TeamBoard />);
 </script>
 </body>
 </html>
-HTMLEOF
-echo "done"

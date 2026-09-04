@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>לוח הצוות</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;600;700&family=Assistant:wght@400;500;600;700&display=swap" />
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.tailwindcss.com" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin="anonymous"></script>
 <style>body{margin:0}</style>
 </head>
 <body>
@@ -35,7 +35,7 @@ const storage = {
    project URL. Double-check it against Project Settings -> API in Supabase,
    and edit here if it doesn't match. */
 const SUPABASE_URL = 'https://sjqdhjypibusjucrgwck.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNqcWRoanlwaWJ1c2p1Y3Jnd2NrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg0NTE5ODQsImV4cCI6MjEwNDAyNzk4NH0.LxMNijruSLAL_QU8diYB7Wk6tO-7_w6zpoippM03bro';
+const SUPABASE_ANON_KEY = 'sb_publishable_no1_sp_b7UfhzeWFOJlulw_xV1Q7x8c';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 /* ---- simple emoji-based icons (no external icon library needed) ---- */

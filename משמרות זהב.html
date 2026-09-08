@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>משמרות זהב בזמן אמת - Supabase</title>
+    <!-- טעינת הספרייה הרשמית של Supabase ברשת -->
+    <script src="https://jsdelivr.net"></script>
+    <style>
+        :root {
+            --gold: #FFD700;
+            --dark-gold: #B8860B;
+            --bg-light: #FFFDF0;
+            --station1: #E8F5E9;
+            --station2: #FFF3E0;
+            --text-dark: #333;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            margin: 0;
+            padding: 15px;
+            text-align: center;
+        }
+        .header {
+            background: linear-gradient(135deg, var(--gold), var(--dark-gold));
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .header h1 { margin: 0; font-size: 24px; text-shadow: 1px 1px 3px rgba(0,0,0,0.3); }
+        .hours-badge {
+            background-color: rgba(255,255,255,0.2);
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            margin-top: 10px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .settings-btn {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: transparent;
+            border: none;
+            font-size: 22px;
+            cursor: pointer;
+            color: white;
+            transition: transform 0.3s;
+        }
+        .settings-btn:hover { transform: rotate(45deg); }
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            max-width: 1200px;
+            margin: 0 auto 20px auto;
+        }
+        .day-card {
+            background: white;
+            border: 2px solid var(--gold);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .day-title {
+            background-color: var(--gold);
+            color: #333;
+            font-weight: bold;
+            padding: 10px;
+            font-size: 18px;
+            margin: 0;
+            border-bottom: 2px solid var(--dark-gold);
+        }
+        .station-block { padding: 10px; text-align: right; }
+        .station-1 { background-color: var(--station1); }
+        .station-2 { background-color: var(--station2); }
+        .station-title {
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 5px;
+            color: #555;
+            border-bottom: 1px dashed #ccc;
+            padding-bottom: 2px;
+        }
+        .student-name {
+            padding: 6px 10px;
+            margin: 3px 0;
+            background: white;
+            border-radius: 6px;
+            font-size: 15px;
+            border: 1px solid #eee;
+            transition: all 0.2s;
+        }
+        .editable { cursor: pointer; border: 1px dashed var(--dark-gold) !important; background: #FFFDE7; }
+        .editable:hover { background: #FFF9C4; }
+        .missing { color: red; font-weight: bold; background: #FFEBEE; }
+        .admin-panel {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            display: none;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .save-btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .save-btn:hover { background-color: #218838; }
+        .safety-rules {
+            max-width: 600px;
+            margin: 3px auto;
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            border: 2px solid #ffcc00;
+            text-align: right;
+        }
+        .safety-rules h3 { margin-top: 0; color: #d4a017; text-align: center; }
+        .safety-rules ul { padding-right: 20px; margin: 0; }
+        .safety-rules li { margin-bottom: 5px; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <button class="settings-btn" onclick="checkCode()">⚙️</button>
+        <h1>משמרות זהב - לוח שיבוץ מסתנכרן בענן</h1>
+        <div class="hours-badge">☀️ בוקר: 07:20 - 08:10 | 🕒 צהריים: 13:20 - 13:40</div>
+    </div>
+
+    <div id="adminPanel" class="admin-panel">
+        <div>🔓 מצב עריכה פעיל למורה! לחצו על השמות בטבלה כדי לשנות אותם.</div>
+        <button class="save-btn" onclick="saveAndExit()">💾 שמירה וסיום</button>
+    </div>
+
+    <div class="grid-container" id="scheduleGrid">טוען נתונים מסונכרנים מהענן... 🔄</div>
+
+    <div class="safety-rules">
+        <h3>🚨 חוקי זהב חשובים</h3>
+        <ul>
+            <li>מגיעים בזמן! בבוקר ב-7:20 ובצהריים ב-13:20 בדיוק.</li>
+            <li>לא יורדים לכביש בשום אופן ומקשיבים להוראות הבטיחות.</li>
+            <li>לובשים את האפוד הזוהר בצורה מסודרת ומחזיקים את המחסום יציב.</li>
+            <li>בזמן המשמרת – הטלפונים נשארים בתיקים!</li>
+        </ul>
+    </div>
+
+    <script>
+        // פרטי החיבור האוטומטיים לפרויקט ה-Supabase שלכם
+        const SUPABASE_URL = "https://supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhoaHBjcWd4Y3RqZXlsanprZ29wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg4MzYxNDMsImV4cCI6MjEwNDQxMjE0M30.rCx0Sej8W4RVi_wukJtKuRdHILs0pXBgdG46vYB1TZ0";
+        
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        let scheduleData = [];
+        let isEditable = false;
+
+        async function loadData() {
+            let { data, error } = await supabaseClient.from('patrol_schedule').select('*').order('id', { ascending: true });
+            if (!error && data) {
+                scheduleData = data;
+                renderGrid();
+            } else {
+                document.getElementById('scheduleGrid').innerText = "שגיאה בטעינת הנתונים. ודאו שהטבלה קיימת ב-Supabase ועשיתם DISABLE RLS.";
+                console.error(error);
+            }
+        }
+
+        function renderGrid() {
+            const container = document.getElementById('scheduleGrid');
+            container.innerHTML = '';
+
+            const days = ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי"];
+            days.forEach(day => {
+                const dayRows = scheduleData.filter(r => r.day === day);
+                if(dayRows.length === 0) return;
+
+                const card = document.createElement('div');
+                card.className = 'day-card';
+                card.innerHTML = `<h2 class="day-title">יום ${day}</h2>`;
+
+                dayRows.forEach((row, sIdx) => {
+                    const block = document.createElement('div');
+                    block.className = `station-block station-${sIdx + 1}`;
+                    block.innerHTML = `<div class="station-title">📍 ${row.station}</div>`;
+
+                    row.names.forEach((name, nIdx) => {
+                        const nameDiv = document.createElement('div');
+                        nameDiv.className = 'student-name';
+                        if (name === '?') nameDiv.classList.add('missing');
+                        if (isEditable) nameDiv.classList.add('editable');
+                        nameDiv.innerText = name;
+
+                        if (isEditable) {
+                            nameDiv.onclick = () => {
+                                const newName = prompt(`שנה שם עבור יום ${day}, ${row.station}:`, name);
+                                if (newName !== null) {
+                                    row.names[nIdx] = newName.trim() || '?';
+                                    renderGrid();
+                                }
+                            };
+                        }
+                        block.appendChild(nameDiv);
+                    });
+                    card.appendChild(block);
+                });
+                container.appendChild(card);
+            });
+        }
+
+        function checkCode() {
+            const code = prompt("שלום למורה! אנא הכניסי את קוד העריכה הסודי שלך:");
+            if (code === "2590") {
+                isEditable = true;
+                document.getElementById('adminPanel').style.display = 'block';
+                renderGrid();
+                alert("מצב עריכה הופעל! לחצו על השמות לשינוי, ובסיום לחצו על שמירה וסיום.");
+            } else if (code !== null) {
+                alert("קוד שגוי!");
+            }
+        }
+
+        async function saveAndExit() {
+            document.getElementById('adminPanel').style.display = 'none';
+            isEditable = false;
+            
+            for (const row of scheduleData) {
+                await supabaseClient.from('patrol_schedule').update({ names: row.names }).eq('id', row.id);
+            }
+            
+            alert("השינויים נשמרו בהצלחה בענן! האתר עודכן אצל כולם.");
+            loadData();
+        }
+
+        loadData();
+    </script>
+</body>
+</html>
